@@ -108,6 +108,7 @@ VALUES (
   ?,
   ?,
   ?,
+  ?,
   ?
 )', array(
       $person['person_created'],
@@ -172,7 +173,7 @@ WHERE
   }
 
   function insertUniqueId(&$unique_id) {
-    $person['uniqueid_created'] = $this->selectCurrentTimestamp();
+    $unique_id['uniqueid_created'] = $this->selectCurrentTimestamp();
     
     $b0 = 5;
     $b1 = 1;
@@ -233,6 +234,7 @@ WHERE
   ?,
   ?,
   ?,
+  ?,
   ?
 )', array(
       $unique_id['uniqueid_created'],
@@ -252,7 +254,7 @@ WHERE
       $unique_id['uniqueid_url'],
       $unique_id['uniqueid_user_comment']
     ));
-    $person['uniqudid_id'] = $this->db->lastInsertId();
+    $unique_id['uniqueid_id'] = $this->db->lastInsertId();
   }
 
   function selectUniqueId($uniqueid_id) {
