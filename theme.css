@@ -1,0 +1,44 @@
+@media screen {
+  body {
+    padding-top: 70px;
+    overflow-y: scroll;
+  }
+}
+
+.navbar-brand {
+  padding: 0 15px;
+}
+
+.navbar-right {
+  margin-right: 0;
+}
+
+th {
+  white-space: nowrap;
+  width: 1px;
+}
+
+.form-login {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.form-request {
+  margin-bottom: 20px;
+}
+
+.form-group .form-control {
+  position: relative;
+}
+.form-group .form-control:focus {
+  z-index: 2;
+}
+.form-group input:not(:last-of-type) {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-group input:not(:first-of-type) {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

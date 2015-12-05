@@ -1,74 +1,82 @@
-<?php require_once('access.php');?>
+<?php
+require_once('access.php');
+require_once('dao.php');
+require_once('utils.php');
+require_once('email.php');
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-		"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>View All OpenLCB Unique ID Ranges</title>
-    
-    <STYLE TYPE="text/css">
-    </STYLE>
+$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+  
+$user = $dao->selectUser();
 
-</head>
-<body>
-<IMG SRC="logo-ajs-dph.png" NAME="graphics1" ALIGN=RIGHT WIDTH=195 HEIGHT=80 BORDER=0>
-<h1>View All OpenLCB Unique ID Ranges</h1>  
-
-This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
-<P>
-For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
-For more information on OpenLCB unique ID assignment, please see the current draft
-<a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
-<a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.
-
-<?php 
-
-// open DB
-global $opts;
-mysql_connect($opts['hn'],$opts['un'],$opts['pw']);
-@mysql_select_db($opts['db']) or die( "Unable to select database. Error (" . mysql_errno() . ") " . mysql_error());
-
-
-function value($result, $j, $index) {
-    if (255 == mysql_result($result,$j,"uniqueid_byte".$index."_mask")) return "*";
-    else return strtoupper(dechex(mysql_result($result,$j,"uniqueid_byte".$index."_value")));
-}
-
-$query = "SELECT * FROM UniqueIDs LEFT JOIN Person USING (person_id)
-        ORDER BY uniqueid_byte0_value, uniqueid_byte0_mask DESC,
-            uniqueid_byte1_value, uniqueid_byte1_mask DESC,
-            uniqueid_byte2_value, uniqueid_byte2_mask DESC,
-            uniqueid_byte3_value, uniqueid_byte3_mask DESC,
-            uniqueid_byte4_value, uniqueid_byte4_mask DESC,
-            uniqueid_byte5_value, uniqueid_byte5_mask DESC
-        ;";
-$result=mysql_query($query);
-
-echo '<table border="1">';
-echo "<tr><th colspan='6'>Range. '*' means that any values are accepted in that byte.</th>";
-echo "<th>Delegating organization or person</th><th>URL</th><th>Comment</th></tr>";
-
-for ($j = 0; $j < mysql_numrows($result); $j++) {
-    echo '<tr>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"0").'</td>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"1").'</td>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"2").'</td>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"3").'</td>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"4").'</td>';
-    echo '<td WIDTH="20" ALIGN="CENTER">'.value($result,$j,"5").'</td>';
-    if (mysql_result($result,$j,"person_organization") != '') {
-        echo '<td>'.mysql_result($result,$j,"person_organization").'</td>';
-    } else {
-        echo '<td>'.mysql_result($result,$j,"person_first_name").' '.mysql_result($result,$j,"person_last_name").'</td>';
-    }
-    echo '<td>'.mysql_result($result,$j,"uniqueid_url").'</td>';
-    echo '<td>'.mysql_result($result,$j,"uniqueid_user_comment").'</td>';
-    echo '</tr>';
-}
-
-echo '</table>';
-
+$unique_ids = $dao->selectUniqueIds();
 ?>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="OpenLCB ID Registry"/>
+    <link rel="icon" href="../../favicon.ico"/>
 
-</body></html>
+    <title>View All OpenLCB Unique ID Ranges</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/>
+
+    <!-- Custom styles for this template -->
+    <link href="theme.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+<?php
+include('navbar.php');
+?>
+    <div class="container-fluid">
+      <h2>View All OpenLCB Unique ID Ranges</h2>
+      <div class="alert alert-info" role="alert">
+        This page shows the unique_ids of OpenLCB Unique ID's that have been assigned to date.
+        <P>
+        For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
+        For more information on OpenLCB unique ID assignment, please see the current draft
+        <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
+        <a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.<br/>
+        This data is also available in <a href="uidxml.php">XML</a>, and <a href="uidjson.php">JSON</a>.<br/>
+        '*' means that any values are accepted in that byte.
+      </div>
+      <table class="table table-condensed">
+        <tbody>
+          <tr>
+            <th>Range</th>
+            <th>Delegating organization or person</th>
+            <th>URL</th>
+            <th>Comment</th>
+          </tr>
+<?php
+foreach ($unique_ids as $unique_id) {
+?>
+          <tr>
+<?php
+  if ($user !== null && $user['person_is_moderator'] === 'y') {
+?>
+            <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></a></td>            
+<?php
+  } else {
+?>
+            <td style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></td>            
+<?php
+  }
+?>
+            <td><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></td>
+            <td><?php echo htmlspecialchars($unique_id['uniqueid_url']); ?></td>
+            <td><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']); ?></td>
+          </tr>
+<?php
+}
+?>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
