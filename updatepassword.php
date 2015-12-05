@@ -7,6 +7,7 @@ require_once('email.php');
 $error = null;
 $message = null;
 $user = null;
+$person = null;
 
 $dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
@@ -17,6 +18,15 @@ try {
   }
 
   $user = $dao->selectUser();
+
+  if (isset($_GET['person_id'])) {
+    if ($user === null) throw new UserException('Login required.');
+    $person = $dao->selectPersonById($_GET['person_id']);
+    if ($person === null) throw new UserException('Profile not found.');
+    if ($user['person_id'] !== $person['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+  } else {
+    $person = $user;
+  }
   
   if (isset($_POST['send_verification_email'])) {
     $person = $dao->selectPersonByEmail($_POST['email']);
@@ -42,12 +52,14 @@ The OpenLCB Group";
 
     $message = 'Verification email sent.';
   } else if (isset($_POST['update_password'])) {
+    if ($user === null) throw new UserException('Login required.');
+  
     if (strlen($_POST['password']) < 8) throw new UserException('Password must be at least 8 characters long.');
     if ($_POST['password'] !== $_POST['repeat_password']) throw new UserException('The entered passwords do not match.');
     
-    setPersonPassword($user, $_POST['password']);
+    setPersonPassword($person, $_POST['password']);
 
-    $dao->updatePerson($user);
+    $dao->updatePerson($person);
     
     $message = 'Password updated.';
   } else if (isset($_GET['verify'])) {
@@ -93,9 +105,9 @@ include('navbar.php');
     <div class="container-fluid form-login">
       <h2 class="form-login-heading">Update password</h2>
 <?php
-if ($user !== null) {
+if ($person !== null) {
 ?>
-      <h3><?php echo htmlspecialchars(formatPersonName($user)); ?></h3>
+      <h3><?php echo htmlspecialchars(formatPersonName($person)); ?></h3>
 <?php
 }
 ?>
@@ -103,18 +115,18 @@ if ($user !== null) {
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user == null || $user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user == null || $user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
-} else if ($user !== null) {
+} else if ($person !== null) {
 ?>
       <form method="POST">
         <div class="form-group">

@@ -7,6 +7,7 @@ require_once('email.php');
 $error = null;
 $message = null;
 $user = null;
+$person = null;
 
 $dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
@@ -19,20 +20,29 @@ try {
   $user = $dao->selectUser();
   if ($user === null) throw new UserException('Login required.');
   
+  if (isset($_GET['person_id'])) {
+    $person = $dao->selectPersonById($_GET['person_id']);
+    if ($person === null) throw new UserException('Profile not found.');
+  } else {
+    $person = $user;
+  }
+  
+  if ($user['person_id'] !== $person['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+  
   if (isset($_POST['send_verification_email'])) {
     if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
-    if ($user['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as your current email address.');
+    if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
     if ($dao->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
 
-    $user['person_email_shared_secret'] = randHex();
-    $user['person_email'] = $_POST['new_email'];
-    $user['person_email_verified'] = 'n';
+    $person['person_email_shared_secret'] = randHex();
+    $person['person_email'] = $_POST['new_email'];
+    $person['person_email_verified'] = 'n';
     
-    $dao->updatePerson($user);
+    $dao->updatePerson($person);
     
-    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "?person_id=" . $user['person_id'] . "&person_email_shared_secret=" . $user['person_email_shared_secret'] . '&verify';
-    $name = formatPersonName($user);
-    $email = formatPersonEmail($user);
+    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $name = formatPersonName($person);
+    $email = formatPersonEmail($person);
     $subject = "Update OpenLCB User Email Address";
     $body = "Hi $name,
 
@@ -43,10 +53,22 @@ The OpenLCB Group";
     if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
     
     $message = 'Email address updated and verification email sent.';
+  } else if (isset($_POST['update'])) {
+    if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
+    if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
+    if ($dao->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
+
+    $person['person_email_shared_secret'] = randHex();
+    $person['person_email'] = $_POST['new_email'];
+    $person['person_email_verified'] = 'n';
+    
+    $dao->updatePerson($person);
+        
+    $message = 'Email address updated.';
   } else if (isset($_GET['verify'])) {
-    $user['person_email_verified'] = 'y';
+    $person['person_email_verified'] = 'y';
   
-    $dao->updatePerson($user);
+    $dao->updatePerson($person);
 
     $message = 'Email address verified.';
   }
@@ -88,9 +110,9 @@ include('navbar.php');
     <div class="container-fluid form-login">
       <h2 class="form-login-heading">Update email address</h2>
 <?php
-if ($user !== null) {
+if ($person !== null) {
 ?>
-      <h3><?php echo htmlspecialchars(formatPersonName($user)); ?></h3>
+      <h3><?php echo htmlspecialchars(formatPersonName($person)); ?></h3>
 <?php
 }
 ?>
@@ -98,14 +120,14 @@ if ($user !== null) {
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
@@ -119,6 +141,13 @@ if ($error !== null) {
           <input type="email" name="repeat_new_email" id="inputEmail" class="form-control input-sm" placeholder="Repeat new email address" required/>
         </div>
         <button type="submit" name="send_verification_email" class="btn btn-sm btn-primary btn-block"><span class="glyphicon glyphicon-send"></span> Update and send verification email</button>
+<?php
+  if ($user['person_is_moderator'] === 'y') {
+?>
+        <button type="submit" name="update" class="btn btn-sm btn-primary btn-block"><span class="glyphicon glyphicon-floppy-disk"></span> Update without verification</button>
+<?php
+  }
+?>
       </form>
 <?php
 }

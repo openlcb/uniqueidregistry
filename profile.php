@@ -237,10 +237,10 @@ if ($error !== null) {
 ?>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
 <?php
-    if ($user['person_id'] === $person['person_id']) {
+    if ($user['person_id'] === $person['person_id'] || $user['person_is_moderator'] === 'y') {
 ?>
-        <a href="updateemailaddress.php" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
-        <a href="updatepassword.php" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
+        <a href="updateemailaddress.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
+        <a href="updatepassword.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
 <?php
     }
     if ($person['person_email_verified'] !== 'y') {
