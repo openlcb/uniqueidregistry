@@ -161,7 +161,7 @@ if ($error !== null) {
 <?php
     if ($unique_id['uniqueid_approved'] === null) {
 ?>
-        <button type="submit" name="approve" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-check"></span> Approve</button
+        <button type="submit" name="approve" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-check"></span> Approve</button>
 <?php
     }
 ?>
