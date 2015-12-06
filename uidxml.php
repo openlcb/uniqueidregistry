@@ -31,20 +31,20 @@ echo "<!-- '*' means that any values are accepted in that byte, forming the rang
 
 for ($j = 0; $j < mysql_numrows($result); $j++) {
   echo '<uidrange>';
-  echo '<byte0>' . htmlspecialchars(value($result, $j, "0"), ENT_XML1) . '</byte0>';
-  echo '<byte1>' . htmlspecialchars(value($result, $j, "1"), ENT_XML1) . '</byte1>';
-  echo '<byte2>' . htmlspecialchars(value($result, $j, "2"), ENT_XML1) . '</byte2>';
-  echo '<byte3>' . htmlspecialchars(value($result, $j, "3"), ENT_XML1) . '</byte3>';
-  echo '<byte4>' . htmlspecialchars(value($result, $j, "4"), ENT_XML1) . '</byte4>';
-  echo '<byte5>' . htmlspecialchars(value($result, $j, "5"), ENT_XML1) . '</byte5>';
+  echo '<byte0>' . htmlspecialchars(value($result, $j, "0")) . '</byte0>';
+  echo '<byte1>' . htmlspecialchars(value($result, $j, "1")) . '</byte1>';
+  echo '<byte2>' . htmlspecialchars(value($result, $j, "2")) . '</byte2>';
+  echo '<byte3>' . htmlspecialchars(value($result, $j, "3")) . '</byte3>';
+  echo '<byte4>' . htmlspecialchars(value($result, $j, "4")) . '</byte4>';
+  echo '<byte5>' . htmlspecialchars(value($result, $j, "5")) . '</byte5>';
   if (mysql_result($result, $j, "person_organization") != '') {
-    echo '<organization>' . htmlspecialchars(mysql_result($result, $j, "person_organization"), ENT_XML1) . '</organization>';
+    echo '<organization>' . htmlspecialchars(mysql_result($result, $j, "person_organization")) . '</organization>';
   } else {
-    echo '<firstname>' . htmlspecialchars(mysql_result($result, $j, "person_first_name"), ENT_XML1) . '</firstname>';
-    echo '<lastname>' . htmlspecialchars(mysql_result($result, $j, "person_last_name"), ENT_XML1) . '</lastname>';
+    echo '<firstname>' . htmlspecialchars(mysql_result($result, $j, "person_first_name")) . '</firstname>';
+    echo '<lastname>' . htmlspecialchars(mysql_result($result, $j, "person_last_name")) . '</lastname>';
   }
-  echo '<url>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_url"), ENT_XML1).'</url>';
-  echo '<comment>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_user_comment"), ENT_XML1).'</comment>';
+  echo '<url>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_url")).'</url>';
+  echo '<comment>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_user_comment")).'</comment>';
   echo "</uidrange>\n";
 }
 
