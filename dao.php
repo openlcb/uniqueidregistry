@@ -374,11 +374,15 @@ ORDER BY
   UniqueIDs
 SET
   uniqueid_url = ?,
-  uniqueid_user_comment = ?
+  uniqueid_user_comment = ?,
+  uniqueid_approved = ?,
+  uniqueid_approved_by = ?
 WHERE
-  person_id = ?', array(
+  uniqueid_id = ?', array(
       $unique_id['uniqueid_url'],
       $unique_id['uniqueid_user_comment'],
+      $unique_id['uniqueid_approved'],
+      $unique_id['uniqueid_approved_by'],
       $unique_id['uniqueid_id']
     ));
   }

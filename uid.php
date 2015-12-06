@@ -81,14 +81,14 @@ include('navbar.php');
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
