@@ -89,7 +89,7 @@ The OpenLCB Group";
     <meta name="description" content="OpenLCB ID Registry"/>
     <link rel="icon" href="../../favicon.ico"/>
 
-    <title>Change OpenLCB User Password</title>
+    <title>Update OpenLCB User Password</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/>
