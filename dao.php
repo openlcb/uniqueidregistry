@@ -371,7 +371,7 @@ ORDER BY
 
   function updateUniqueId($unique_id) {
     $this->update('UPDATE
-  UniqueIds
+  UniqueIDs
 SET
   uniqueid_url = ?,
   uniqueid_user_comment = ?
@@ -384,7 +384,7 @@ WHERE
   }
 
   function deleteUniqueId($unique_id_id) {
-    $this->update('DELETE FROM UniqueIds WHERE uniqueid_id = ?', array( $unique_id_id ));
+    $this->update('DELETE FROM UniqueIDs WHERE uniqueid_id = ?', array( $unique_id_id ));
   }
 
 }
