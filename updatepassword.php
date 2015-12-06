@@ -115,14 +115,14 @@ if ($person !== null) {
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user == null || $user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updatepassword.php<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="<?php echo htmlspecialchars("http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . ($user == null || $user['person_id'] === $person['person_id'] ? '' : '?person_id=' . $person['person_id'])); ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updatepassword.php<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
