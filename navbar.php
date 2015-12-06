@@ -28,7 +28,7 @@ if ($user !== null) {
 } else {
 ?>
             <a href="register.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'register.php') echo ' active'; ?>"><span class="glyphicon glyphicon-edit"></span> Register</a>
-            <a href="updatepassword.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'updatepassword.php') echo ' active'; ?>"><span class="glyphicon glyphicon-erase"></span> Update Password</a>
+            <a href="updatepassword.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'updatepassword.php') echo ' active'; ?>"><span class="glyphicon glyphicon-erase"></span> Update password</a>
             <a href="login.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'login.php') echo ' active'; ?>"><span class="glyphicon glyphicon-log-in"></span> Login</a>
 <?php
 }
