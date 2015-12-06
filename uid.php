@@ -103,11 +103,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="uniqueid_url" class="form-control input-sm" value="<?php echo htmlspecialchars($unique_id['uniqueid_url']) ?>"/></td>
+              <td><input name="uniqueid_url" class="form-control input-sm" value="<?php echo htmlspecialchars($unique_id['uniqueid_url']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($unique_id['uniqueid_url']) ?></td>
+              <td><?php echo htmlspecialchars($unique_id['uniqueid_url']); ?></td>
 <?php
   }
 ?>
@@ -118,11 +118,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><textarea name="uniqueid_user_comment" class="form-control input-sm" oninput="this.rows = 2; this.style.height = '0'; this.style.height = this.scrollHeight + 2 + 18 + 'px';"><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']) ?></textarea></td>
+              <td><textarea name="uniqueid_user_comment" class="form-control input-sm" oninput="this.rows = 2; this.style.height = '0'; this.style.height = this.scrollHeight + 2 + 18 + 'px';"><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']); ?></textarea></td>
 <?php
   } else {
 ?>
-              <td><?php echo nl2br(htmlspecialchars($unique_id['uniqueid_user_comment'])) ?></td>
+              <td><?php echo nl2br(htmlspecialchars($unique_id['uniqueid_user_comment'])); ?></td>
 <?php
   }
 ?>
@@ -133,19 +133,19 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Created</th>
-              <td><?php echo htmlspecialchars($unique_id['uniqueid_created']) ?></td>
+              <td><?php echo htmlspecialchars($unique_id['uniqueid_created']); ?></td>
             </tr>
             <tr>
               <th>Updated</th>
-              <td><?php echo htmlspecialchars($unique_id['last_updated']) ?></td>
+              <td><?php echo htmlspecialchars($unique_id['last_updated']); ?></td>
             </tr>
             <tr>
               <th>Approved</th>
-              <td><?php echo htmlspecialchars($unique_id['uniqueid_approved']) ?></td>
+              <td><?php echo htmlspecialchars($unique_id['uniqueid_approved']); ?></td>
             </tr>
             <tr>
               <th>Approved by</th>
-              <td><a href="profile.php?person_id=<?php echo $unique_id['uniqueid_approved_by']; ?>"><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']) ?></a></td>
+              <td><a href="profile.php?person_id=<?php echo $unique_id['uniqueid_approved_by']; ?>"><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']); ?></a></td>
             </tr>
           </tbody>
         </table>

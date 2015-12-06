@@ -147,11 +147,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_first_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_first_name']) ?>"/></td>
+              <td><input name="person_first_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_first_name']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_first_name']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_first_name']); ?></td>
 <?php
   }
 ?>
@@ -161,11 +161,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_last_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_last_name']) ?>"/></td>
+              <td><input name="person_last_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_last_name']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_last_name']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_last_name']); ?></td>
 <?php
   }
 ?>
@@ -175,11 +175,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_organization" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_organization']) ?>"/></td>
+              <td><input name="person_organization" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_organization']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_organization']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_organization']); ?></td>
 <?php
   }
 ?>
@@ -190,11 +190,11 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Email address verified</th>
-              <td><?php echo htmlspecialchars($person['person_email_verified']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_email_verified']); ?></td>
             </tr>
             <tr>
               <th>Subscribed</th>
-              <td><?php echo htmlspecialchars($person['person_subscribe']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_subscribe']); ?></td>
             </tr>
             <tr>
               <th>Moderator</th>
@@ -208,22 +208,22 @@ if ($error !== null) {
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_is_moderator']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_is_moderator']); ?></td>
 <?php
   }
 ?>
             </tr>
             <tr>
               <th>Created</th>
-              <td><?php echo htmlspecialchars($person['person_created']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_created']); ?></td>
             </tr>
             <tr>
               <th>Updated</th>
-              <td><?php echo htmlspecialchars($person['last_updated']) ?></td>
+              <td><?php echo htmlspecialchars($person['last_updated']); ?></td>
             </tr>
             <tr>
               <th>Unique ID ranges</th>
-              <td><?php echo htmlspecialchars($person['person_uniqueid_count']) ?></td>
+              <td><?php echo htmlspecialchars($person['person_uniqueid_count']); ?></td>
             </tr>
           </tbody>
         </table>
