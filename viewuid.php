@@ -58,17 +58,7 @@ include('navbar.php');
 foreach ($top_unique_ids as $top_unique_id) {
 ?>
           <tr>
-<?php
-  if ($user !== null && $user['person_is_moderator'] === 'y') {
-?>
             <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
-<?php
-  } else {
-?>
-            <td style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></td>            
-<?php
-  }
-?>
             <td><?php echo htmlspecialchars(formatPersonName($top_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></td>
@@ -93,17 +83,7 @@ foreach ($top_unique_ids as $top_unique_id) {
     foreach ($sub_unique_ids as $sub_unique_id) {
 ?>
           <tr>
-<?php
-  if ($user !== null && $user['person_is_moderator'] === 'y') {
-?>
             <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
-<?php
-  } else {
-?>
-            <td style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></td>            
-<?php
-  }
-?>
             <td><?php echo htmlspecialchars(formatPersonName($sub_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_user_comment']); ?></td>

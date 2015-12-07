@@ -36,7 +36,7 @@ include('navbar.php');
     <div class="container-fluid">
       <h2>View All OpenLCB Unique ID Ranges</h2>
       <div class="alert alert-info" role="alert">
-        This page shows the unique_ids of OpenLCB Unique ID's that have been assigned to date.
+        This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
         <P>
         For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
         For more information on OpenLCB unique ID assignment, please see the current draft
@@ -57,17 +57,7 @@ include('navbar.php');
 foreach ($unique_ids as $unique_id) {
 ?>
           <tr>
-<?php
-  if ($user !== null && $user['person_is_moderator'] === 'y') {
-?>
             <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></a></td>            
-<?php
-  } else {
-?>
-            <td style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></td>            
-<?php
-  }
-?>
             <td><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></td>
             <td><?php echo htmlspecialchars($unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']); ?></td>

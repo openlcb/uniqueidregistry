@@ -14,13 +14,14 @@ try {
   $dao->beginTransaction();
   
   $user = $dao->selectUser();
-  if ($user === null) throw new UserException('Login required.');
-  if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
   
   $unique_id = $dao->selectUniqueId($_GET['uniqueid_id']);
   if ($unique_id === null) throw new UserException('Range not found.');
 
   if (isset($_POST['save'])) {
+    if ($user === null) throw new UserException('Login required.');
+    if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');  
+    
     $unique_id['uniqueid_url']          = $_POST['uniqueid_url'];
     $unique_id['uniqueid_user_comment'] = $_POST['uniqueid_user_comment'];
 
@@ -28,6 +29,9 @@ try {
 
     $message = 'Saved.';
   } else if (isset($_POST['approve'])) {
+    if ($user === null) throw new UserException('Login required.');
+    if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+      
     $unique_id['uniqueid_approved']    = $dao->selectCurrentTimestamp();
     $unique_id['uniqueid_approved_by'] = $user['person_id'];
 
@@ -35,6 +39,9 @@ try {
 
     $message = 'Approved.';
   } else if (isset($_POST['delete'])) {
+    if ($user === null) throw new UserException('Login required.');
+    if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+    
     $dao->deleteUniqueId($unique_id['uniqueid_id']);
 
     header('Location: viewuidall.php');
@@ -129,7 +136,17 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Delegating organization or person</th>
+<?php
+  if ($user !== null && $user['person_is_moderator'] === 'y') {
+?>
               <td><a href="profile.php?person_id=<?php echo $unique_id['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></a></td>
+<?php
+  } else {
+?>
+              <td><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></td>
+<?php
+  }
+?>
             </tr>
             <tr>
               <th>Created</th>
@@ -145,28 +162,40 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Approved by</th>
+<?php
+  if ($user !== null && $user['person_is_moderator'] === 'y') {
+?>
               <td><a href="profile.php?person_id=<?php echo $unique_id['uniqueid_approved_by']; ?>"><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']); ?></a></td>
-            </tr>
+<?php
+  } else {
+?>
+              <td><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']); ?></td>
+<?php
+  }
+?>            </tr>
           </tbody>
         </table>
 <?php
-  if (isset($_POST['edit'])) {
+  if ($user !== null && $user['person_is_moderator'] === 'y') {
+    if (isset($_POST['edit'])) {
 ?>
         <button type="submit" name="save" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-floppy-saved"></span> Save</button>
         <button type="submit" name="cancel" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</button>
 <?php
-  } else {
+    } else {
 ?>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+        <a href="transferuidrange.php?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Transfer</a>
 <?php
-    if ($unique_id['uniqueid_approved'] === null) {
+      if ($unique_id['uniqueid_approved'] === null) {
 ?>
         <button type="submit" name="approve" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-check"></span> Approve</button>
 <?php
-    }
+      }
 ?>
         <button type="submit" name="delete" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this range?');"><span class="glyphicon glyphicon-trash"></span> Delete</button>
 <?php
+    }
   }
 ?>
       </form>
