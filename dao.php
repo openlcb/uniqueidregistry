@@ -133,11 +133,11 @@ VALUES (
   }
 
   function selectModerators() {
-    return $this->select('SELECT * FROM Person WHERE person_is_moderator = \'y\'');
+    return $this->select('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person WHERE person_is_moderator = \'y\'');
   }
 
   function selectPeople() {
-    return $this->select('SELECT * FROM Person');
+    return $this->select('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person');
   }
 
   function updatePerson($person) {

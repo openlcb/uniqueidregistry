@@ -73,7 +73,10 @@ if ($error !== null) {
           <tr>
             <th>Organization or person</th>
             <th>Email address</th>
+            <th>Email address verified</th>
             <th>Subscribed</th>
+            <th>Moderator</th>
+            <th>Unique ID ranges</th>
           </tr>
 <?php
   foreach ($people as $person) {
@@ -81,7 +84,10 @@ if ($error !== null) {
           <tr>
             <td><a href="profile.php?person_id=<?php echo $person['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($person)); ?></a></td>
             <td><a href="<?php echo htmlspecialchars('mailto:' . rawurlencode(formatPersonEmail($person))); ?>"><?php echo htmlspecialchars($person['person_email']); ?></a></td>
+            <td><?php echo htmlspecialchars($person['person_email_verified']); ?></td>
             <td><?php echo htmlspecialchars($person['person_subscribe']); ?></td>
+            <td><?php echo htmlspecialchars($person['person_is_moderator']); ?></td>
+            <td><?php echo htmlspecialchars($person['person_uniqueid_count']); ?></td>
           </tr>
 <?php
   }
