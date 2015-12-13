@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/vendor/autoload.php';
 require_once('access.php');
 require_once('dao.php');
 require_once('utils.php');
@@ -16,6 +17,13 @@ try {
 
   if (isset($_POST['send_request'])) {
     if ($user === null) {
+      if (!isset($_POST['g-recaptcha-response']) || !$_POST['g-recaptcha-response']) throw new UserException('Robots not allowed.');
+      $recaptcha = new \ReCaptcha\ReCaptcha(RECAPTCHA_SECRET);
+      $resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
+      if (!$resp->isSuccess()) throw new UserException('reCAPTCHA error');
+
+      if (!$_POST['email']) throw new UserException('Email address not entered.');
+
       if ($_POST['email'] !== $_POST['repeat_email']) throw new UserException('The entered email addresses do not match.');
       if ($dao->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use. Please login before requesting an unique id range.');
     
@@ -94,6 +102,8 @@ $url";
 
     <!-- Custom styles for this template -->
     <link href="theme.css" rel="stylesheet"/>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   </head>
 
   <body>
@@ -156,7 +166,7 @@ if ($error !== null) {
       <form method="POST">
         <div class="form-group">
 <?php
-if ($user === null) {
+  if ($user === null) {
 ?>
           <label for="inputFirstName" class="sr-only">First name</label>
           <input type="text" name="first_name" id="inputFirstName" class="form-control input-sm" placeholder="First name" required autofocus/>
@@ -173,8 +183,9 @@ if ($user === null) {
               <input type="checkbox" name="subscribe"> Add to OpenLCB email list
             </label>
           </div>
+          <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars(RECAPTCHA_SITE_KEY); ?>"></div>
 <?php
-}
+  }
 ?>
         </div>
         <div class="form-group">

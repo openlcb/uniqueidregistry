@@ -19,7 +19,7 @@ th {
 }
 
 .form-login {
-  max-width: 300px;
+  max-width: 332px;
   margin: 0 auto;
 }
 
@@ -41,4 +41,10 @@ th {
 .form-group input:not(:first-of-type) {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.g-recaptcha {
+  margin-top: 10px;
+  margin-bottom: 8px;
+  height: 78px;
 }
