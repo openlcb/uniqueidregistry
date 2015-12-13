@@ -4,11 +4,46 @@ require_once('dao.php');
 require_once('utils.php');
 require_once('email.php');
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
-  
-$user = $dao->selectUser();
+$filter = null;
+$error = null;
+$message = null;
+$user = null;
+$person = null;
+$unique_ids = null;
 
-$unique_ids = $dao->selectUniqueIds();
+$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+try {
+  $dao->beginTransaction();
+
+  $user = $dao->selectUser();
+
+  if (isset($_GET['pending'])) {
+    $filter = 'Pending';
+
+    $unique_ids = $dao->selectUnapprovedUniqueIds();
+  } else if (isset($_GET['person_id'])) {
+    $person = $dao->selectPersonById($_GET['person_id']);
+    if ($person === null) throw new UserException('Profile not found.');
+    
+    $filter = formatPersonName($person);
+
+    $unique_ids = $dao->selectUniqueIdsByPerdonId($_GET['person_id']);
+  } else {
+    $unique_ids = $dao->selectUniqueIds();
+  }
+
+  $dao->commit();
+} catch (UserException $e) {
+  $dao->rollback();
+  
+  $error = $e->getMessage();
+} catch (Exception $e) {
+  $dao->rollback();
+
+  throw $e;
+}
+
+if (empty($unique_ids)) $message = 'None found.';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,9 +70,30 @@ include('navbar.php');
 ?>
     <div class="container-fluid">
       <h2>View All OpenLCB Unique ID Ranges</h2>
+<?php
+if ($filter !== null) {
+?>
+      <h3><?php echo htmlspecialchars($filter); ?></h3>
+<?php
+}
+if ($error !== null) {
+?>
+      <div class="alert alert-danger">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($error); ?>
+      </div>
+<?php
+} else if ($message !== null) {
+?>
+      <div class="alert alert-info">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($message); ?>
+      </div>
+<?php
+} else {
+?>
       <div class="alert alert-info" role="alert">
-        This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
-        <P>
+        This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.<br/>
         For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
         For more information on OpenLCB unique ID assignment, please see the current draft
         <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
@@ -54,7 +110,7 @@ include('navbar.php');
             <th>Comment</th>
           </tr>
 <?php
-foreach ($unique_ids as $unique_id) {
+  foreach ($unique_ids as $unique_id) {
 ?>
           <tr>
             <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></a></td>            
@@ -63,10 +119,13 @@ foreach ($unique_ids as $unique_id) {
             <td><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']); ?></td>
           </tr>
 <?php
-}
+  }
 ?>
         </tbody>
       </table>
+<?php
+}
+?>
     </div>
   </body>
 </html>

@@ -37,8 +37,7 @@ include('navbar.php');
       <h2>View OpenLCB Unique ID Ranges</h2>
       <div class="alert alert-info" role="alert">
         This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
-        The numbers below are in hexadecimal.
-        <P>
+        The numbers below are in hexadecimal.<br/>
         For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
         For more information on OpenLCB unique ID assignment, please see the current draft
         <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 

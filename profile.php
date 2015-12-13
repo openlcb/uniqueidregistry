@@ -235,6 +235,7 @@ if ($error !== null) {
 <?php
   } else {
 ?>
+        <a href="viewuidall.php<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
 <?php
     if ($user['person_id'] === $person['person_id'] || $user['person_is_moderator'] === 'y') {

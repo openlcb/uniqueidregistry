@@ -55,10 +55,12 @@ $range
 The OpenLCB Group";
     if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
 
+    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../viewuidall.php' . '?pending';
     $moderators = array_map('formatPersonEmail', $dao->selectModerators());
     $subject = "Request OpenLCB Unique ID Range";
     $body = "A new OpenLCB unique ID range has been assigned.
-You have been notified as you are a moderator.";
+You have been notified as you are a moderator.
+$url";
     if (!sourceforge_email($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . $range;

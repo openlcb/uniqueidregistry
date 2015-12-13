@@ -7,7 +7,14 @@
           <div class="navbar-left">
             <div class="btn-group">
               <a href="viewuid.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuid.php') echo ' active'; ?>">Unique ID Ranges</a>
-              <a href="viewuidall.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuidall.php') echo ' active'; ?>">All Unique ID Ranges</a>
+              <a href="viewuidall.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuidall.php' && !isset($_GET['pending']) && !isset($_GET['person_id'])) echo ' active'; ?>">All Unique ID Ranges</a>
+<?php
+if ($user !== null && $user['person_is_moderator'] === 'y') {
+?>
+              <a href="viewuidall.php?pending" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuidall.php' && isset($_GET['pending'])) echo ' active'; ?>">Pending Unique ID Requests</a>
+<?php
+}
+?>
               <a href="requestuidrange.php" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'requestuidrange.php') echo ' active'; ?>">Request Unique ID Range</a>
 <?php
 if ($user !== null && $user['person_is_moderator'] === 'y') {

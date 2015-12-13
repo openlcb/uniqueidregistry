@@ -299,6 +299,46 @@ ORDER BY
   uniqueid_byte5_value, uniqueid_byte5_mask DESC');
   }
 
+  function selectUnapprovedUniqueIds() {
+    return $this->select('SELECT
+  UniqueIDs.*,
+  Person.person_organization,
+  Person.person_first_name,
+  Person.person_last_name
+FROM
+  UniqueIDs
+  LEFT JOIN Person USING (person_id)
+WHERE
+  UniqueIDs.uniqueid_approved IS NULL
+ORDER BY
+  uniqueid_byte0_value, uniqueid_byte0_mask DESC,
+  uniqueid_byte1_value, uniqueid_byte1_mask DESC,
+  uniqueid_byte2_value, uniqueid_byte2_mask DESC,
+  uniqueid_byte3_value, uniqueid_byte3_mask DESC,
+  uniqueid_byte4_value, uniqueid_byte4_mask DESC,
+  uniqueid_byte5_value, uniqueid_byte5_mask DESC');
+  }
+
+  function selectUniqueIdsByPerdonId($person_id) {
+    return $this->select('SELECT
+  UniqueIDs.*,
+  Person.person_organization,
+  Person.person_first_name,
+  Person.person_last_name
+FROM
+  UniqueIDs
+  LEFT JOIN Person USING (person_id)
+WHERE
+  UniqueIDs.person_id = ?
+ORDER BY
+  uniqueid_byte0_value, uniqueid_byte0_mask DESC,
+  uniqueid_byte1_value, uniqueid_byte1_mask DESC,
+  uniqueid_byte2_value, uniqueid_byte2_mask DESC,
+  uniqueid_byte3_value, uniqueid_byte3_mask DESC,
+  uniqueid_byte4_value, uniqueid_byte4_mask DESC,
+  uniqueid_byte5_value, uniqueid_byte5_mask DESC', array( $person_id ));
+  }
+
   function selectTopUniqueIds() {
     return $this->select('SELECT
   UniqueIDs.*,
