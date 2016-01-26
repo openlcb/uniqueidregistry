@@ -42,7 +42,7 @@ include('navbar.php');
         For more information on OpenLCB unique ID assignment, please see the current draft
         <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
         <a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.<br/>
-        This data is also available in <a href="uidxml.php">XML</a>, and <a href="uidjson.php">JSON</a>.<br/>
+        This data is also available in <a href="uidxml">XML</a>, and <a href="uidjson">JSON</a>.<br/>
         '*' means that any values are accepted in that byte.
       </div>
       <table class="table table-condensed">
@@ -57,7 +57,7 @@ include('navbar.php');
 foreach ($top_unique_ids as $top_unique_id) {
 ?>
           <tr>
-            <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
+            <td style="font-family: monospace; white-space: pre;"><a href="uid?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($top_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></td>
@@ -82,7 +82,7 @@ foreach ($top_unique_ids as $top_unique_id) {
     foreach ($sub_unique_ids as $sub_unique_id) {
 ?>
           <tr>
-            <td style="font-family: monospace; white-space: pre;"><a href="uid.php?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
+            <td style="font-family: monospace; white-space: pre;"><a href="uid?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($sub_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_user_comment']); ?></td>

@@ -58,13 +58,13 @@ try {
     $dao->deletePerson($person['person_id']);
 
     if ($user['person_is_moderator'] === 'y') {
-      header('Location: people.php');
+      header('Location: people');
     } else {
       header('Location: .');
     }
     exit;
   } else if (isset($_POST['send_verification_email'])) {
-    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/profile?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Register as OpenLCB User";
@@ -125,14 +125,14 @@ include('navbar.php');
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="profile.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="profile<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="profile.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="profile<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
@@ -235,13 +235,13 @@ if ($error !== null) {
 <?php
   } else {
 ?>
-        <a href="viewuidall.php<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
+        <a href="viewuidall<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
 <?php
     if ($user['person_id'] === $person['person_id'] || $user['person_is_moderator'] === 'y') {
 ?>
-        <a href="updateemailaddress.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
-        <a href="updatepassword.php<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
+        <a href="updateemailaddress<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
+        <a href="updatepassword<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
 <?php
     }
     if ($person['person_email_verified'] !== 'y') {

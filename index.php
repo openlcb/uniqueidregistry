@@ -42,11 +42,11 @@ include('navbar.php');
       <p>
         Local pages:
         <ul>
-          <li><a href="viewuid.php">Formatted tables</a> of assigned unique ID ranges
-          <li><a href="viewuidall.php">Single table</a> of assigned unique ID ranges
-          <li><a href="uidxml.php">XML listing</a> of assigned unique ID ranges
-          <li><a href="uidjson.php">JSON listing</a> of assigned unique ID ranges
-          <li><a href="requestuidrange.php">Request</a> to be assigned a range
+          <li><a href="viewuid">Formatted tables</a> of assigned unique ID ranges
+          <li><a href="viewuidall">Single table</a> of assigned unique ID ranges
+          <li><a href="uidxml">XML listing</a> of assigned unique ID ranges
+          <li><a href="uidjson">JSON listing</a> of assigned unique ID ranges
+          <li><a href="requestuidrange">Request</a> to be assigned a range
         </ul>
       </p>
       <hr/>

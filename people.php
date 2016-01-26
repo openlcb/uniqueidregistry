@@ -82,7 +82,7 @@ if ($error !== null) {
   foreach ($people as $person) {
 ?>
           <tr>
-            <td><a href="profile.php?person_id=<?php echo $person['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($person)); ?></a></td>
+            <td><a href="profile?person_id=<?php echo $person['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($person)); ?></a></td>
             <td><a href="<?php echo htmlspecialchars('mailto:' . rawurlencode(formatPersonEmail($person))); ?>"><?php echo htmlspecialchars($person['person_email']); ?></a></td>
             <td><?php echo htmlspecialchars($person['person_email_verified']); ?></td>
             <td><?php echo htmlspecialchars($person['person_subscribe']); ?></td>

@@ -37,7 +37,7 @@ try {
       $dao->updatePerson($person);
     }
 
-    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/updatepassword?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Update OpenLCB User Password";
@@ -115,14 +115,14 @@ if ($person !== null) {
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="updatepassword.php<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updatepassword<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="updatepassword.php<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updatepassword<?php if ($user !== null && $user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php

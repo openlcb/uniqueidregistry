@@ -44,7 +44,7 @@ try {
     
     $dao->deleteUniqueId($unique_id['uniqueid_id']);
 
-    header('Location: viewuidall.php');
+    header('Location: viewuidall');
     exit;
   }
 
@@ -139,7 +139,7 @@ if ($error !== null) {
 <?php
   if ($user !== null && $user['person_is_moderator'] === 'y') {
 ?>
-              <td><a href="profile.php?person_id=<?php echo $unique_id['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></a></td>
+              <td><a href="profile?person_id=<?php echo $unique_id['person_id']; ?>"><?php echo htmlspecialchars(formatPersonName($unique_id)); ?></a></td>
 <?php
   } else {
 ?>
@@ -165,7 +165,7 @@ if ($error !== null) {
 <?php
   if ($user !== null && $user['person_is_moderator'] === 'y') {
 ?>
-              <td><a href="profile.php?person_id=<?php echo $unique_id['uniqueid_approved_by']; ?>"><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']); ?></a></td>
+              <td><a href="profile?person_id=<?php echo $unique_id['uniqueid_approved_by']; ?>"><?php echo htmlspecialchars($unique_id['approved_by_organization'] != '' ? $unique_id['approved_by_organization'] : $unique_id['approved_by_first_name'] . ' ' . $unique_id['approved_by_last_name']); ?></a></td>
 <?php
   } else {
 ?>
@@ -185,7 +185,7 @@ if ($error !== null) {
     } else {
 ?>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
-        <a href="transferuidrange.php?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Transfer</a>
+        <a href="transferuidrange?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Transfer</a>
 <?php
       if ($unique_id['uniqueid_approved'] === null) {
 ?>

@@ -76,8 +76,8 @@ Delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../uid.php?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../viewuidall.php' . '?pending';
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
     if (!sourceforge_email($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
@@ -149,7 +149,7 @@ if ($error !== null) {
         <ul>
           <li>
             You must provide a personal name. You may also provide a company name.
-            In our <a href="viewuid.php">listing of assigned ranges</a>, we will publish the company name, if provided.
+            In our <a href="viewuid">listing of assigned ranges</a>, we will publish the company name, if provided.
             If there is no company name, we will publish the personal name.
           </li>
           <li>
