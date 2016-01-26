@@ -48,11 +48,12 @@ class PasswordHash {
 	function get_random_bytes($count)
 	{
 		$output = '';
-		if (is_readable('/dev/urandom') &&
+        //This doesn't work with Interspeed hosting.
+		/*if (is_readable('/dev/urandom') &&
 		    ($fh = @fopen('/dev/urandom', 'rb'))) {
 			$output = fread($fh, $count);
 			fclose($fh);
-		}
+		}*/
 
 		if (strlen($output) < $count) {
 			$output = '';
