@@ -51,27 +51,36 @@ try {
 
     $dao->insertUniqueId($unique_id);
     
-    $range = formatUniqueIdHex($unique_id);
-    $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Request OpenLCB Unique ID Range";
-    $body = "Hi $name,
+    $body = "Hi " . formatPersonName($person) . ",
 
 You were assigned an OpenLCB unique ID range of:
-$range
+" . formatUniqueIdHex($unique_id) . "
+
+Delegating organization or person: " . formatPersonName($person) . "
+URL: " . $unique_id['uniqueid_url'] . "
+Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 The OpenLCB Group";
     if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
 
-    $url = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../viewuidall.php' . '?pending';
     $moderators = array_map('formatPersonEmail', $dao->selectModerators());
     $subject = "Request OpenLCB Unique ID Range";
     $body = "A new OpenLCB unique ID range has been assigned.
 You have been notified as you are a moderator.
-$url";
+
+" . formatUniqueIdHex($unique_id) . "
+
+Delegating organization or person: " . formatPersonName($person) . "
+URL: " . $unique_id['uniqueid_url'] . "
+Comment: " . $unique_id['uniqueid_user_comment'] . "
+
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../uid.php?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . '/../viewuidall.php' . '?pending';
     if (!sourceforge_email($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
     
-    $message = 'Your assigned range is: ' . $range;
+    $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
   }
 
   $dao->commit();
