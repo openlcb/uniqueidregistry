@@ -125,19 +125,45 @@ VALUES (
   }
 
   function selectPersonById($person_id) {
-    return $this->selectRow('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person WHERE person_id = ?', array( $person_id ));
+    return $this->selectRow('SELECT
+  *,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id AND UniqueIDs.uniqueid_approved IS NULL) person_unapproved_uniqueid_count
+FROM
+  Person
+WHERE
+  person_id = ?', array( $person_id ));
   }
     
   function selectPersonByEmail($email) {
-    return $this->selectRow('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person WHERE person_email = ?', array( $email ));
+    return $this->selectRow('SELECT
+  *,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id AND UniqueIDs.uniqueid_approved IS NULL) person_unapproved_uniqueid_count
+FROM
+  Person
+WHERE
+  person_email = ?', array( $email ));
   }
 
   function selectModerators() {
-    return $this->select('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person WHERE person_is_moderator = \'y\'');
+    return $this->select('SELECT
+  *,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id AND UniqueIDs.uniqueid_approved IS NULL) person_unapproved_uniqueid_count
+FROM
+  Person
+WHERE
+  person_is_moderator = \'y\'');
   }
 
   function selectPeople() {
-    return $this->select('SELECT *, (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count FROM Person');
+    return $this->select('SELECT
+  *,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
+  (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id AND UniqueIDs.uniqueid_approved IS NULL) person_unapproved_uniqueid_count
+FROM
+  Person');
   }
 
   function updatePerson($person) {

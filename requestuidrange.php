@@ -40,6 +40,8 @@ try {
     
       $dao->insertPerson($person);
     } else {
+      if ($user['person_unapproved_uniqueid_count'] > 0) throw new UserException('A previous unique id range request is still pending approval.');
+
       $person = $user;
     }
 
@@ -81,6 +83,8 @@ All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
     if (!mail_abstraction($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
+  } else {
+    if ($user !== null && $user['person_unapproved_uniqueid_count'] > 0) $message = 'A previous unique id range request is still pending approval.';
   }
 
   $dao->commit();
@@ -121,23 +125,6 @@ include('navbar.php');
 ?>
     <div class="container-fluid form-request">
       <h2 class="form-login-heading">Request OpenLCB Unique ID Range</h2>
-<?php
-if ($error !== null) {
-?>
-      <div class="alert alert-danger">
-        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
-        <?php echo htmlspecialchars($error); ?>
-      </div>
-<?php
-} else if ($message !== null) {
-?>
-      <div class="alert alert-info">
-        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
-        <?php echo htmlspecialchars($message); ?>
-      </div>
-<?php
-} else {
-?>
       <div class="alert alert-info" role="alert">
         This page allows you to request a range of 256 OpenLCB Unique IDs for your own use.
         <p>
@@ -172,6 +159,23 @@ if ($error !== null) {
         </ul>
         Unique ID Range requests require moderator approval.
       </div>
+<?php
+if ($error !== null) {
+?>
+      <div class="alert alert-danger">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($error); ?>
+      </div>
+<?php
+} else if ($message !== null) {
+?>
+      <div class="alert alert-info">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($message); ?>
+      </div>
+<?php
+} else {
+?>
       <form method="POST">
         <div class="form-group">
 <?php
