@@ -80,7 +80,7 @@ Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
 All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
-    if (!mail_abstraction($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
+    if (!mail_abstraction($moderators, $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
   } else {
