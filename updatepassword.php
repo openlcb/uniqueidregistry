@@ -48,7 +48,7 @@ You can update your password with the link below.
 $url
 
 The OpenLCB Group";
-    if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
+    if (!mail_abstraction(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
 
     $message = 'Verification email sent.';
   } else if (isset($_POST['update_password'])) {

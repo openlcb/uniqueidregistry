@@ -50,7 +50,7 @@ You can verify your email address with the link below.
 $url
 
 The OpenLCB Group";
-    if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
+    if (!mail_abstraction(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
     
     $message = 'Email address updated and verification email sent.';
   } else if (isset($_POST['update'])) {

@@ -74,7 +74,7 @@ You can verify your email address with the link below.
 $url
 
 The OpenLCB Group";
-    sourceforge_email(array( $email ), $subject, $body);
+    mail_abstraction(array( $email ), $subject, $body);
  
     $message = 'Verification email sent.';
   } else if (isset($_GET['verify'])) {

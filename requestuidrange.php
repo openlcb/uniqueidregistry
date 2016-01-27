@@ -63,7 +63,7 @@ URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 The OpenLCB Group";
-    if (!sourceforge_email(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
+    if (!mail_abstraction(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
 
     $moderators = array_map('formatPersonEmail', $dao->selectModerators());
     $subject = "Request OpenLCB Unique ID Range";
@@ -78,7 +78,7 @@ Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
 All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
-    if (!sourceforge_email($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
+    if (!mail_abstraction($moderators, $subject, $body)) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
   }
