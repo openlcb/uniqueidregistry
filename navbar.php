@@ -1,7 +1,7 @@
-    <div class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar navbar-default navbar-fixed-top<?php if (defined('DEPLOYMENT') && DEPLOYMENT === 'test') echo ' test'; ?>">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="."><img src="logo-ajs-1.svg" height="50" alt="OpenLCB"/></a>
+          <a class="navbar-brand" href="."><img src="logo-ajs-1.svg" height="50" alt="OpenLCB"/><?php if (defined('DEPLOYMENT') && DEPLOYMENT === 'test') echo ' Test'; ?></a>
         </div>
         <div class="collapse navbar-collapse">
           <div class="navbar-left">

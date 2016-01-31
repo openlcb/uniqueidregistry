@@ -5,8 +5,26 @@
   }
 }
 
+.navbar-default.test {
+  background-color: #f80000;
+  border-color: #e70000;
+}
+
+.navbar-default.test .navbar-brand {
+  color: #770000;
+}
+
+.navbar-default.test .navbar-brand:focus,
+.navbar-default.test .navbar-brand:hover {
+  color: #5e0000;
+}
+
 .navbar-brand {
   padding: 0 15px;
+}
+
+.navbar-brand img {
+  display: inline-block;
 }
 
 .navbar-right {
