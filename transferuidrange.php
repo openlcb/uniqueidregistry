@@ -29,6 +29,50 @@ try {
 
     $dao->updateUniqueId($unique_id);
 
+    $subject = "OpenLCB Unique ID Range Transferred";
+    $body = "Hi " . formatPersonName($unique_id) . ",
+
+The following OpenLCB Unique ID Range has been Transferred.
+
+" . formatUniqueIdHex($unique_id) . "
+
+From delegating organization or person: " . formatPersonName($unique_id) . "
+To delegating organization or person: " . formatPersonName($person) . "
+URL: " . $unique_id['uniqueid_url'] . "
+Comment: " . $unique_id['uniqueid_user_comment'] . "
+
+The OpenLCB Group";
+    if (!mail_abstraction(array( formatPersonEmail($unique_id) ), $subject, $body)) throw new UserError('Failed to send email.');
+
+    $subject = "OpenLCB Unique ID Range Transferred";
+    $body = "Hi " . formatPersonName($person) . ",
+
+The following OpenLCB Unique ID Range has been Transferred.
+
+" . formatUniqueIdHex($unique_id) . "
+
+From delegating organization or person: " . formatPersonName($unique_id) . "
+To delegating organization or person: " . formatPersonName($person) . "
+URL: " . $unique_id['uniqueid_url'] . "
+Comment: " . $unique_id['uniqueid_user_comment'] . "
+
+The OpenLCB Group";
+    if (!mail_abstraction(array( formatPersonEmail($person) ), $subject, $body)) throw new UserError('Failed to send email.');
+
+    $body = "The following OpenLCB Unique ID Range has been Transferred.
+You have been notified as you are a moderator.
+
+" . formatUniqueIdHex($unique_id) . "
+
+From delegating organization or person: " . formatPersonName($unique_id) . "
+To delegating organization or person: " . formatPersonName($person) . "
+URL: " . $unique_id['uniqueid_url'] . "
+Comment: " . $unique_id['uniqueid_user_comment'] . "
+
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
+    if (!mail_abstraction(array_map('formatPersonEmail', $dao->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
+    
     $message = 'Transferred.';
   }
 
