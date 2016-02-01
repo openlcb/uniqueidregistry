@@ -53,8 +53,7 @@ try {
 
     $dao->insertUniqueId($unique_id);
     
-    $email = formatPersonEmail($person);
-    $subject = "Request OpenLCB Unique ID Range";
+    $subject = "OpenLCB Unique ID Range Requested";
     $body = "Hi " . formatPersonName($person) . ",
 
 You were assigned an OpenLCB unique ID range of:
@@ -65,10 +64,8 @@ URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 The OpenLCB Group";
-    if (!mail_abstraction(array( $email ), $subject, $body)) throw new UserError('Failed to send email.');
+    if (!mail_abstraction(array( formatPersonEmail($person) ), $subject, $body)) throw new UserError('Failed to send email.');
 
-    $moderators = array_map('formatPersonEmail', $dao->selectModerators());
-    $subject = "Request OpenLCB Unique ID Range";
     $body = "A new OpenLCB unique ID range has been assigned.
 You have been notified as you are a moderator.
 
@@ -80,7 +77,7 @@ Comment: " . $unique_id['uniqueid_user_comment'] . "
 
 UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
 All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuidall?pending';
-    if (!mail_abstraction($moderators, $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
+    if (!mail_abstraction(array_map('formatPersonEmail', $dao->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
   } else {

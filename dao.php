@@ -289,6 +289,7 @@ WHERE
   Person.person_organization,
   Person.person_first_name,
   Person.person_last_name,
+  Person.person_email,
   approved_by.person_organization approved_by_organization,
   approved_by.person_first_name approved_by_first_name,
   approved_by.person_last_name approved_by_last_name
@@ -312,7 +313,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
@@ -330,7 +332,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
@@ -350,7 +353,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
@@ -370,7 +374,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
@@ -394,7 +399,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
@@ -420,7 +426,8 @@ ORDER BY
   UniqueIDs.*,
   Person.person_organization,
   Person.person_first_name,
-  Person.person_last_name
+  Person.person_last_name,
+  Person.person_email
 FROM
   UniqueIDs
   LEFT JOIN Person USING (person_id)
