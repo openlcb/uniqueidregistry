@@ -7,11 +7,10 @@
           <div class="navbar-left">
             <div class="btn-group">
               <a href="viewuid" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuid.php') echo ' active'; ?>">Unique ID Ranges</a>
-              <a href="viewuidall" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuidall.php' && !isset($_GET['pending']) && !isset($_GET['person_id'])) echo ' active'; ?>">All Unique ID Ranges</a>
 <?php
 if ($user !== null && $user['person_is_moderator'] === 'y') {
 ?>
-              <a href="viewuidall?pending" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuidall.php' && isset($_GET['pending'])) echo ' active'; ?>">Pending Unique ID Requests</a>
+              <a href="viewuid?pending" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuid.php' && isset($_GET['pending'])) echo ' active'; ?>">Pending Unique ID Requests</a>
 <?php
 }
 ?>

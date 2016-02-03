@@ -4,11 +4,48 @@ require_once('dao.php');
 require_once('utils.php');
 require_once('email.php');
 
+$filter = null;
+$error = null;
+$message = null;
+$user = null;
+$person = null;
+$top = false;
+$top_unique_ids = null;
+
 $dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+try {
+  $dao->beginTransaction();
+
+  $user = $dao->selectUser();
+
+  if (isset($_GET['pending'])) {
+    $filter = 'Pending';
+
+    $top_unique_ids = $dao->selectUnapprovedUniqueIds();
+  } else if (isset($_GET['person_id'])) {
+    $person = $dao->selectPersonById($_GET['person_id']);
+    if ($person === null) throw new UserException('Profile not found.');
+    
+    $filter = formatPersonName($person);
+
+    $top_unique_ids = $dao->selectUniqueIdsByPerdonId($_GET['person_id']);
+  } else {
+    $top = true;
+    $top_unique_ids = $dao->selectTopUniqueIds();
+  }
+
+  $dao->commit();
+} catch (UserException $e) {
+  $dao->rollback();
   
-$user = $dao->selectUser();
-  
-$top_unique_ids = $dao->selectTopUniqueIds();
+  $error = $e->getMessage();
+} catch (Exception $e) {
+  $dao->rollback();
+
+  throw $e;
+}
+
+if (empty($top_unique_ids)) $message = 'None found.';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,6 +72,28 @@ include('navbar.php');
 ?>
     <div class="container-fluid">
       <h2>View OpenLCB Unique ID Ranges</h2>
+<?php
+if ($filter !== null) {
+?>
+      <h3><?php echo htmlspecialchars($filter); ?></h3>
+<?php
+}
+if ($error !== null) {
+?>
+      <div class="alert alert-danger">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($error); ?>
+      </div>
+<?php
+} else if ($message !== null) {
+?>
+      <div class="alert alert-info">
+        <a href="" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <?php echo htmlspecialchars($message); ?>
+      </div>
+<?php
+} else {
+?>
       <div class="alert alert-info" role="alert">
         This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
         The numbers below are in hexadecimal.<br/>
@@ -64,10 +123,11 @@ foreach ($top_unique_ids as $top_unique_id) {
           </tr>
 <?php
 }
-foreach ($top_unique_ids as $top_unique_id) {
-  $sub_unique_ids = $dao->selectSubUniqueIds($top_unique_id['uniqueid_byte0_value']);
+if ($top) {
+  foreach ($top_unique_ids as $top_unique_id) {
+    $sub_unique_ids = $dao->selectSubUniqueIds($top_unique_id['uniqueid_byte0_value']);
     
-  if (count($sub_unique_ids) > 0) {
+    if (count($sub_unique_ids) > 0) {
 ?>
           <tr>
             <td colspan="4"><h3><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></h3></td>
@@ -79,7 +139,7 @@ foreach ($top_unique_ids as $top_unique_id) {
             <th>Comment</th>
           </tr>
 <?php      
-    foreach ($sub_unique_ids as $sub_unique_id) {
+      foreach ($sub_unique_ids as $sub_unique_id) {
 ?>
           <tr>
             <td style="font-family: monospace; white-space: pre;"><a href="uid?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
@@ -88,13 +148,16 @@ foreach ($top_unique_ids as $top_unique_id) {
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_user_comment']); ?></td>
           </tr>
 <?php
+      }        
     }
-        
   }
 }
 ?>
         </tbody>
       </table>
+<?php
+}
+?>
     </div>
   </body>
 </html>
