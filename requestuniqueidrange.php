@@ -125,10 +125,10 @@ include('navbar.php');
       <div class="alert alert-info" role="alert">
         This page allows you to request a range of 256 OpenLCB Unique IDs for your own use.
         <p>
-          For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
-          For more information on OpenLCB unique ID assignment, please see the current draft
-          <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
-          <a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.
+          For more information on OpenLCB, please see the <a href="http://openlcb.sourceforge.net/trunk/documents/index.html">documentation page</a>.
+          For more information on OpenLCB unique ID assignment, please see the current
+          <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersS.pdf">specification</a> and 
+          <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersTN.pdf">technical note</a>.
         <p>
         <ul>
           <li>
@@ -148,7 +148,7 @@ include('navbar.php');
           </li>
           <li>
             If you check the &quot;Add to OpenLCB email list&quot; box, we will add your email address to a
-            <a href="https://sourceforge.net/mailarchive/forum.php?forum_name=openlcb-announcements">mailing list</a>
+            <a href="https://sourceforge.net/p/openlcb/mailman/openlcb-announcements/">mailing list</a>
             for occasional updates regarding OpenLCB standards &amp; documentation, policy changes, etc.
             We strongly recommend that you subscribe so that you'll hear about these things in a timely manner.  
             The traffic on that list will be low, generally less than one email a month.

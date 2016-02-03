@@ -37,7 +37,7 @@ include('navbar.php');
         This is the “web” directory of the OpenLCB&#8482; web site. It contains various resources for the OpenLCB web site.
       </p>
       <p>
-        The main page of the OpenLCB web site is <a href="../../index.html">here</a>.
+        The main page of the OpenLCB web site is <a href="http://openlcb.sourceforge.net/index.html">here</a>.
       </p>
       <p>
         Local pages:
@@ -53,7 +53,7 @@ include('navbar.php');
        Site hosted by <a href="http://sourceforge.net/projects/openlcb"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=286373&amp;type=13" width="120" height="30" border="2"/></a>
       </p>
       <p>
-        This web site contains trademarks and copyrighted information. Please see the <a href="../../Licensing.html">Licensing</a> page.
+        This web site contains trademarks and copyrighted information. Please see the <a href="http://openlcb.sourceforge.net/Licensing.html">Licensing</a> page.
       </p>
     </div>
   </body>

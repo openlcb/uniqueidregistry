@@ -97,10 +97,10 @@ if ($error !== null) {
       <div class="alert alert-info" role="alert">
         This page shows the ranges of OpenLCB Unique ID's that have been assigned to date.
         The numbers below are in hexadecimal.<br/>
-        For more information on OpenLCB, please see the <a href="../documents/index.html">documentation page</a>.
-        For more information on OpenLCB unique ID assignment, please see the current draft
-        <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
-        <a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.<br/>
+        For more information on OpenLCB, please see the <a href="http://openlcb.sourceforge.net/trunk/documents/index.html">documentation page</a>.
+        For more information on OpenLCB unique ID assignment, please see the current
+        <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersS.pdf">specification</a> and 
+        <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersTN.pdf">technical note</a>.<br/>
         This data is also available in <a href="uniqueidrangesxml">XML</a>, and <a href="uniqueidrangesjson">JSON</a>.<br/>
         '*' means that any values are accepted in that byte.
       </div>
