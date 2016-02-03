@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,11 +9,11 @@ $error = null;
 $message = null;
 $user = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
 
   if (isset($_POST['send_request'])) {
     if ($user === null) {
@@ -25,7 +25,7 @@ try {
       if (!$_POST['email']) throw new UserException('Email address not entered.');
 
       if ($_POST['email'] !== $_POST['repeat_email']) throw new UserException('The entered email addresses do not match.');
-      if ($dao->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use. Please login before requesting an unique id range.');
+      if ($dal->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use. Please login before requesting an unique id range.');
     
       $person = array(
         'person_first_name' => $_POST['first_name'],
@@ -38,7 +38,7 @@ try {
         'person_password_hash' => null
       );
     
-      $dao->insertPerson($person);
+      $dal->insertPerson($person);
     } else {
       if ($user['person_unapproved_uniqueid_count'] > 0) throw new UserException('A previous unique id range request is still pending approval.');
 
@@ -51,7 +51,7 @@ try {
       'uniqueid_user_comment' => $_POST['comment']
     );
 
-    $dao->insertUniqueId($unique_id);
+    $dal->insertUniqueId($unique_id);
     
     $subject = "OpenLCB Unique ID Range Requested";
     $body = "Hi " . formatPersonName($person) . ",
@@ -75,22 +75,22 @@ Delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuid?pending';
-    if (!mail_abstraction(array_map('formatPersonEmail', $dao->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+    if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
   } else {
     if ($user !== null && $user['person_unapproved_uniqueid_count'] > 0) $message = 'A previous unique id range request is still pending approval.';
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }
@@ -133,7 +133,7 @@ include('navbar.php');
         <ul>
           <li>
             You must provide a personal name. You may also provide a company name.
-            In our <a href="viewuid">listing of assigned ranges</a>, we will publish the company name, if provided.
+            In our <a href="uniqueidranges">listing of assigned ranges</a>, we will publish the company name, if provided.
             If there is no company name, we will publish the personal name.
           </li>
           <li>

@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -8,23 +8,23 @@ $error = null;
 $user = null;
 $people = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   if ($user === null) throw new UserException('Login required.');
   if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
   
-  $people = $dao->selectPeople();
+  $people = $dal->selectPeople();
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

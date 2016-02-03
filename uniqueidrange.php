@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,13 +9,13 @@ $message = null;
 $user = null;
 $unique_id = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   
-  $unique_id = $dao->selectUniqueId($_GET['uniqueid_id']);
+  $unique_id = $dal->selectUniqueId($_GET['uniqueid_id']);
   if ($unique_id === null) throw new UserException('Range not found.');
 
   if (isset($_POST['save'])) {
@@ -25,17 +25,17 @@ try {
     $unique_id['uniqueid_url']          = $_POST['uniqueid_url'];
     $unique_id['uniqueid_user_comment'] = $_POST['uniqueid_user_comment'];
 
-    $dao->updateUniqueId($unique_id);
+    $dal->updateUniqueId($unique_id);
 
     $message = 'Saved.';
   } else if (isset($_POST['approve'])) {
     if ($user === null) throw new UserException('Login required.');
     if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
       
-    $unique_id['uniqueid_approved']    = $dao->selectCurrentTimestamp();
+    $unique_id['uniqueid_approved']    = $dal->selectCurrentTimestamp();
     $unique_id['uniqueid_approved_by'] = $user['person_id'];
 
-    $dao->updateUniqueId($unique_id);
+    $dal->updateUniqueId($unique_id);
 
     $subject = "OpenLCB Unique ID Range Approved";
     $body = "Hi " . formatPersonName($unique_id) . ",
@@ -60,28 +60,28 @@ Delegating organization or person: " . formatPersonName($unique_id) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuid?pending';
-    if (!mail_abstraction(array_map('formatPersonEmail', $dao->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+    if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
     
     $message = 'Approved.';
   } else if (isset($_POST['delete'])) {
     if ($user === null) throw new UserException('Login required.');
     if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
     
-    $dao->deleteUniqueId($unique_id['uniqueid_id']);
+    $dal->deleteUniqueId($unique_id['uniqueid_id']);
 
-    header('Location: viewuid');
+    header('Location: uniqueidranges');
     exit;
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }
@@ -212,7 +212,7 @@ if ($error !== null) {
     } else {
 ?>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
-        <a href="transferuidrange?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Transfer</a>
+        <a href="transferuniqueidrange?uniqueid_id=<?php echo $unique_id['uniqueid_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Transfer</a>
 <?php
       if ($unique_id['uniqueid_approved'] === null) {
 ?>

@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,19 +9,19 @@ $message = null;
 $user = null;
 $person = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
     
   if (isset($_GET['verify'])) {
-    if (!$dao->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
   }
 
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   if ($user === null) throw new UserException('Login required.');
   
   if (isset($_GET['person_id'])) {
-    $person = $dao->selectPersonById($_GET['person_id']);
+    $person = $dal->selectPersonById($_GET['person_id']);
     if ($person === null) throw new UserException('Profile not found.');
   } else {
     $person = $user;
@@ -32,13 +32,13 @@ try {
   if (isset($_POST['send_verification_email'])) {
     if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
     if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
-    if ($dao->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
+    if ($dal->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
 
     $person['person_email_shared_secret'] = randHex();
     $person['person_email'] = $_POST['new_email'];
     $person['person_email_verified'] = 'n';
     
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
     
     $url = "http://" . $_SERVER['HTTP_HOST'] . "/updateemailaddress?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
@@ -56,30 +56,30 @@ The OpenLCB Group";
   } else if (isset($_POST['update'])) {
     if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
     if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
-    if ($dao->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
+    if ($dal->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
 
     $person['person_email_shared_secret'] = randHex();
     $person['person_email'] = $_POST['new_email'];
     $person['person_email_verified'] = 'n';
     
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
         
     $message = 'Email address updated.';
   } else if (isset($_GET['verify'])) {
     $person['person_email_verified'] = 'y';
   
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
 
     $message = 'Email address verified.';
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

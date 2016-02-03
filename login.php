@@ -1,20 +1,20 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
 $error = null;
 $user = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   
   if (isset($_POST['login'])) {
-    if (!$dao->login($_POST['email'], $_POST['password'], isset($_POST['remember']))) throw new UserException("Login failed.");
+    if (!$dal->login($_POST['email'], $_POST['password'], isset($_POST['remember']))) throw new UserException("Login failed.");
     
     header('Location: .');
     exit;    
@@ -23,13 +23,13 @@ try {
     exit;
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

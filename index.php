@@ -1,12 +1,12 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 
-$user = $dao->selectUser();
+$user = $dal->selectUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,10 +42,10 @@ include('navbar.php');
       <p>
         Local pages:
         <ul>
-          <li><a href="viewuid">Formatted tables</a> of assigned unique ID ranges
-          <li><a href="uidxml">XML listing</a> of assigned unique ID ranges
-          <li><a href="uidjson">JSON listing</a> of assigned unique ID ranges
-          <li><a href="requestuidrange">Request</a> to be assigned a range
+          <li><a href="uniqueidranges">Listing</a> of assigned unique ID ranges
+          <li><a href="uniqueidrangesxml">XML listing</a> of assigned unique ID ranges
+          <li><a href="uniqueidrangesjson">JSON listing</a> of assigned unique ID ranges
+          <li><a href="requestuniqueidrange">Request</a> to be assigned a range
         </ul>
       </p>
       <hr/>

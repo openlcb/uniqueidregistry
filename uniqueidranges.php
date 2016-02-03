@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -12,35 +12,35 @@ $person = null;
 $top = false;
 $top_unique_ids = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
 
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
 
   if (isset($_GET['pending'])) {
     $filter = 'Pending';
 
-    $top_unique_ids = $dao->selectUnapprovedUniqueIds();
+    $top_unique_ids = $dal->selectUnapprovedUniqueIds();
   } else if (isset($_GET['person_id'])) {
-    $person = $dao->selectPersonById($_GET['person_id']);
+    $person = $dal->selectPersonById($_GET['person_id']);
     if ($person === null) throw new UserException('Profile not found.');
     
     $filter = formatPersonName($person);
 
-    $top_unique_ids = $dao->selectUniqueIdsByPerdonId($_GET['person_id']);
+    $top_unique_ids = $dal->selectUniqueIdsByPerdonId($_GET['person_id']);
   } else {
     $top = true;
-    $top_unique_ids = $dao->selectTopUniqueIds();
+    $top_unique_ids = $dal->selectTopUniqueIds();
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }
@@ -101,7 +101,7 @@ if ($error !== null) {
         For more information on OpenLCB unique ID assignment, please see the current draft
         <a href="../specs/drafts/GenUniqueIdS.pdf">specification</a> and 
         <a href="../specs/drafts/GenUniqueIdTN.pdf">technical note</a>.<br/>
-        This data is also available in <a href="uidxml">XML</a>, and <a href="uidjson">JSON</a>.<br/>
+        This data is also available in <a href="uniqueidrangesxml">XML</a>, and <a href="uniqueidrangesjson">JSON</a>.<br/>
         '*' means that any values are accepted in that byte.
       </div>
       <table class="table table-condensed">
@@ -116,7 +116,7 @@ if ($error !== null) {
 foreach ($top_unique_ids as $top_unique_id) {
 ?>
           <tr>
-            <td style="font-family: monospace; white-space: pre;"><a href="uid?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
+            <td style="font-family: monospace; white-space: pre;"><a href="uniqueidrange?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($top_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></td>
@@ -125,7 +125,7 @@ foreach ($top_unique_ids as $top_unique_id) {
 }
 if ($top) {
   foreach ($top_unique_ids as $top_unique_id) {
-    $sub_unique_ids = $dao->selectSubUniqueIds($top_unique_id['uniqueid_byte0_value']);
+    $sub_unique_ids = $dal->selectSubUniqueIds($top_unique_id['uniqueid_byte0_value']);
     
     if (count($sub_unique_ids) > 0) {
 ?>
@@ -142,7 +142,7 @@ if ($top) {
       foreach ($sub_unique_ids as $sub_unique_id) {
 ?>
           <tr>
-            <td style="font-family: monospace; white-space: pre;"><a href="uid?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
+            <td style="font-family: monospace; white-space: pre;"><a href="uniqueidrange?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($sub_unique_id)); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_url']); ?></td>
             <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_user_comment']); ?></td>

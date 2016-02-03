@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,19 +9,19 @@ $message = null;
 $user = null;
 $person = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
     
   if (isset($_GET['verify'])) {
-    if (!$dao->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
   }
 
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
 
   if (isset($_GET['person_id'])) {
     if ($user === null) throw new UserException('Login required.');
-    $person = $dao->selectPersonById($_GET['person_id']);
+    $person = $dal->selectPersonById($_GET['person_id']);
     if ($person === null) throw new UserException('Profile not found.');
     if ($user['person_id'] !== $person['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
   } else {
@@ -29,12 +29,12 @@ try {
   }
   
   if (isset($_POST['send_verification_email'])) {
-    $person = $dao->selectPersonByEmail($_POST['email']);
+    $person = $dal->selectPersonByEmail($_POST['email']);
     if ($person === null) throw new UserException('Profile not found.');
     
     if (!$person['person_email_shared_secret']) {
       $person['person_email_shared_secret'] = randHex();
-      $dao->updatePerson($person);
+      $dal->updatePerson($person);
     }
 
     $url = "http://" . $_SERVER['HTTP_HOST'] . "/updatepassword?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
@@ -59,22 +59,22 @@ The OpenLCB Group";
     
     setPersonPassword($person, $_POST['password']);
 
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
     
     $message = 'Password updated.';
   } else if (isset($_GET['verify'])) {
     $user['person_email_verified'] = 'y';
   
-    $dao->updatePerson($user);
+    $dal->updatePerson($user);
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

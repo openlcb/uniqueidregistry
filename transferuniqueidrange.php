@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,25 +9,25 @@ $message = null;
 $user = null;
 $unique_id = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   if ($user === null) throw new UserException('Login required.');
   
-  $unique_id = $dao->selectUniqueId($_GET['uniqueid_id']);
+  $unique_id = $dal->selectUniqueId($_GET['uniqueid_id']);
   if ($unique_id === null) throw new UserException('Range not found.');
 
   if ($user['person_id'] !== $unique_id['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');  
 
   if (isset($_POST['transfer'])) {
-    $person = $dao->selectPersonByEmail($_POST['email']);
+    $person = $dal->selectPersonByEmail($_POST['email']);
     if ($person === null) throw new UserException('Profile not found.');
     
     $unique_id['person_id'] = $person['person_id'];
 
-    $dao->updateUniqueId($unique_id);
+    $dal->updateUniqueId($unique_id);
 
     $subject = "OpenLCB Unique ID Range Transferred";
     $body = "Hi " . formatPersonName($unique_id) . ",
@@ -69,20 +69,20 @@ To delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uid?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/viewuid?pending';
-    if (!mail_abstraction(array_map('formatPersonEmail', $dao->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
+UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+    if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
     
     $message = 'Transferred.';
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

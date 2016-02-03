@@ -1,6 +1,6 @@
 <?php
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,19 +9,19 @@ $message = null;
 $user = null;
 $person = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
   
   if (isset($_GET['verify'])) {
-    if (!$dao->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
   }
   
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   if ($user === null) throw new UserException('Login required.');
   
   if (isset($_GET['person_id'])) {
-    $person = $dao->selectPersonById($_GET['person_id']);
+    $person = $dal->selectPersonById($_GET['person_id']);
     if ($person === null) throw new UserException('Profile not found.');
   } else {
     $person = $user;
@@ -37,25 +37,25 @@ try {
       $person['person_is_moderator'] = $_POST['person_is_moderator'];
     }
 
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
 
     $message = 'Saved.';
   } else if (isset($_POST['subscribe'])) {
     $person['person_subscribe'] = 'y';
 
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
 
     $message = 'Subscribed.';
   } else if (isset($_POST['unsubscribe'])) {
     $person['person_subscribe'] = 'n';
 
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
 
     $message = 'Unsubscribed.';
   } else if (isset($_POST['delete'])) {
-    if (count($dao->selectUniqueIdsByPersonId($person['person_id'])) > 0) throw new UserException('Delete unique id ranges first.');
+    if (count($dal->selectUniqueIdsByPersonId($person['person_id'])) > 0) throw new UserException('Delete unique id ranges first.');
 
-    $dao->deletePerson($person['person_id']);
+    $dal->deletePerson($person['person_id']);
 
     if ($user['person_is_moderator'] === 'y') {
       header('Location: people');
@@ -80,18 +80,18 @@ The OpenLCB Group";
   } else if (isset($_GET['verify'])) {
     $person['person_email_verified'] = 'y';
     
-    $dao->updatePerson($person);
+    $dal->updatePerson($person);
   
     $message = 'Email address verified.';
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }
@@ -235,7 +235,7 @@ if ($error !== null) {
 <?php
   } else {
 ?>
-        <a href="viewuid<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
+        <a href="uniqueidranges<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
 <?php
     if ($user['person_id'] === $person['person_id'] || $user['person_is_moderator'] === 'y') {

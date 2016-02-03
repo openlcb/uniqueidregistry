@@ -6,15 +6,15 @@
         <div class="collapse navbar-collapse">
           <div class="navbar-left">
             <div class="btn-group">
-              <a href="viewuid" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuid.php' && !isset($_GET['pending']) && !isset($_GET['person_id'])) echo ' active'; ?>">Unique ID Ranges</a>
+              <a href="uniqueidranges" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'uniqueidranges.php' && !isset($_GET['pending']) && !isset($_GET['person_id'])) echo ' active'; ?>">Unique ID Ranges</a>
 <?php
 if ($user !== null && $user['person_is_moderator'] === 'y') {
 ?>
-              <a href="viewuid?pending" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'viewuid.php' && isset($_GET['pending'])) echo ' active'; ?>">Pending Unique ID Requests</a>
+              <a href="uniqueidranges?pending" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'uniqueidranges.php' && isset($_GET['pending'])) echo ' active'; ?>">Pending Unique ID Requests</a>
 <?php
 }
 ?>
-              <a href="requestuidrange" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'requestuidrange.php') echo ' active'; ?>">Request Unique ID Range</a>
+              <a href="requestuniqueidrange" class="btn btn-sm btn-default navbar-btn<?php if (basename($_SERVER['SCRIPT_NAME']) === 'requestuniqueidrange.php') echo ' active'; ?>">Request Unique ID Range</a>
 <?php
 if ($user !== null && $user['person_is_moderator'] === 'y') {
 ?>

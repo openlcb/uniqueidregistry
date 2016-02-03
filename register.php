@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once('access.php');
-require_once('dao.php');
+require_once('dal.php');
 require_once('utils.php');
 require_once('email.php');
 
@@ -9,15 +9,15 @@ $error = null;
 $message = null;
 $user = null;
 
-$dao = new DAO($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
+$dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
-  $dao->beginTransaction();
+  $dal->beginTransaction();
     
   if (isset($_GET['verify'])) {
-    if (!$dao->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
   }
 
-  $user = $dao->selectUser();
+  $user = $dal->selectUser();
   
   if (isset($_POST['send_verification_email'])) {
     if (!isset($_POST['g-recaptcha-response']) || !$_POST['g-recaptcha-response']) throw new UserException('Robots not allowed.');
@@ -30,7 +30,7 @@ try {
 
     if ($_POST['email'] !== $_POST['repeat_email']) throw new UserException('The entered email addresses do not match.');
     if ($_POST['password'] !== $_POST['repeat_password']) throw new UserException('The entered passwords do not match.');
-    if ($dao->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use.');
+    if ($dal->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use.');
 
     $person = array(
       'person_first_name' => $_POST['first_name'],
@@ -44,7 +44,7 @@ try {
     
     setPersonPassword($person, $_POST['password']);
 
-    $dao->insertPerson($person);
+    $dal->insertPerson($person);
     
     $url = "http://" . $_SERVER['HTTP_HOST'] . "/register?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
@@ -62,7 +62,7 @@ The OpenLCB Group";
   } else if (isset($_GET['verify'])) { 
     $user['person_email_verified'] = 'y';
     
-    $dao->updatePerson($user);
+    $dal->updatePerson($user);
   
     $message = 'Email address verified.';
   } else if ($user !== null) {
@@ -70,13 +70,13 @@ The OpenLCB Group";
     exit;
   }
 
-  $dao->commit();
+  $dal->commit();
 } catch (UserException $e) {
-  $dao->rollback();
+  $dal->rollback();
   
   $error = $e->getMessage();
 } catch (Exception $e) {
-  $dao->rollback();
+  $dal->rollback();
 
   throw $e;
 }

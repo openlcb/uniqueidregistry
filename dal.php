@@ -1,5 +1,5 @@
 <?php
-class DAO {
+class DAL {
 
   private $db;
   public $user;
