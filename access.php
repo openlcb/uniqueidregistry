@@ -1,17 +1,12 @@
 <?php
 
 // provide database access constants
+$opts['hn'] = '';
+$opts['un'] = '';
+$opts['pw'] = '';  // filled in on host so not present in SVN
+$opts['db'] = '';
 
-// for local access and debugging
-$opts['hn'] = '127.0.0.1';
-$opts['un'] = 'root';
-$opts['pw'] = '';
+define('RECAPTCHA_SITE_KEY', '');
+define('RECAPTCHA_SECRET', '');
 
-// for use on the SourceForge.net servers
-//$opts['hn'] = 'mysql-o';
-//$opts['un'] = 'o286373rw';
-//$opts['pw'] = '';  // filled in on host so not present in SVN
-
-$opts['db'] = 'o286373_openlcb';
-
-?>
+define('EMAIL_FROM', '"OpenLCB Registry" <registry@openlcb.org>');
