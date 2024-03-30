@@ -46,7 +46,7 @@ try {
 
     $dal->insertPerson($person);
     
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/register?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/register?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Register as OpenLCB User";
@@ -141,11 +141,6 @@ if ($error !== null) {
           <input type="password" name="password" id="inputPassword" class="form-control input-sm" placeholder="Password" required/>
           <label for="inputRepearPassword" class="sr-only">Repeat password</label>
           <input type="password" name="repeat_password" id="inputRepearPassword" class="form-control input-sm" placeholder="Repeat password" required/>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" name="subscribe"> Add to OpenLCB email list
-            </label>
-          </div>
           <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars(RECAPTCHA_SITE_KEY); ?>"></div>
         </div>
         <button type="submit" name="send_verification_email" class="btn btn-sm btn-primary btn-block"><span class="glyphicon glyphicon-send"></span> Register and send verification email</button>

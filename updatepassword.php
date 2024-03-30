@@ -37,7 +37,7 @@ try {
       $dal->updatePerson($person);
     }
 
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/updatepassword?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/updatepassword?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Update OpenLCB User Password";

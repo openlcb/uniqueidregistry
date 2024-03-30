@@ -75,8 +75,8 @@ Delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+UID: " . 'https://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
     if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
@@ -125,10 +125,10 @@ include('navbar.php');
       <div class="alert alert-info" role="alert">
         This page allows you to request a range of 256 OpenLCB Unique IDs for your own use.
         <p>
-          For more information on OpenLCB, please see the <a href="http://openlcb.sourceforge.net/trunk/documents/index.html">documentation page</a>.
+          For more information on OpenLCB, please see the <a href="https://openlcb.org/openlcb-and-lcc-documents/layout-command-control-lcc/">documentation page</a>.
           For more information on OpenLCB unique ID assignment, please see the current
-          <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersS.pdf">specification</a> and 
-          <a href="http://openlcb.sourceforge.net/trunk/specs/UniqueIdentifiersTN.pdf">technical note</a>.
+          <a href="https://openlcb.org/wp-content/uploads/2021/08/S-9.7.0.3-UniqueIdentifiers-2021-04-25.pdf">specification</a> and 
+          <a href="https://openlcb.org/wp-content/uploads/2021/08/TN-9.7.0.3-UniqueIdentifiers-2021-04-25.pdf">technical note</a>.
         <p>
         <ul>
           <li>
@@ -145,13 +145,6 @@ include('navbar.php');
           <li>
             You may provide a comment, which we will publish if provided.
             You can use this for company contact information, for example, including an email address.
-          </li>
-          <li>
-            If you check the &quot;Add to OpenLCB email list&quot; box, we will add your email address to a
-            <a href="https://sourceforge.net/p/openlcb/mailman/openlcb-announcements/">mailing list</a>
-            for occasional updates regarding OpenLCB standards &amp; documentation, policy changes, etc.
-            We strongly recommend that you subscribe so that you'll hear about these things in a timely manner.  
-            The traffic on that list will be low, generally less than one email a month.
           </li>
         </ul>
         Unique ID Range requests require moderator approval.
@@ -188,11 +181,6 @@ if ($error !== null) {
           <input type="email" name="email" id="inputEmail" class="form-control input-sm" placeholder="Email address" required/>
           <label for="inputRepeatEmail" class="sr-only">Repeat email address</label>
           <input type="email" name="repeat_email" id="inputRepeatEmail" class="form-control input-sm" placeholder="Repeat email address" required/>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" name="subscribe"> Add to OpenLCB email list
-            </label>
-          </div>
           <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars(RECAPTCHA_SITE_KEY); ?>"></div>
 <?php
   }

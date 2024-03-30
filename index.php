@@ -34,10 +34,10 @@ include('navbar.php');
     <div class="container-fluid">
       <h2>OpenLCB ID Registry</h2>
       <p>
-        This is the “web” directory of the OpenLCB&#8482; web site. It contains various resources for the OpenLCB web site.
+        This is the “web” directory of the OpenLCB&#8482; website. It contains various resources for the OpenLCB website.
       </p>
       <p>
-        The main page of the OpenLCB web site is <a href="http://openlcb.sourceforge.net/index.html">here</a>.
+        The main page of the OpenLCB website is <a href="https://openlcb.org">here</a>.
       </p>
       <p>
         Local pages:
@@ -50,10 +50,7 @@ include('navbar.php');
       </p>
       <hr/>
       <p>
-       Site hosted by <a href="http://sourceforge.net/projects/openlcb"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=286373&amp;type=13" width="120" height="30" border="2"/></a>
-      </p>
-      <p>
-        This web site contains trademarks and copyrighted information. Please see the <a href="http://openlcb.sourceforge.net/Licensing.html">Licensing</a> page.
+        This website contains trademarks and copyrighted information. Please see the <a href="https://openlcb.org/about-openlcb/licensing/">Licensing</a> page.
       </p>
     </div>
   </body>

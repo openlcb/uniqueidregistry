@@ -69,8 +69,8 @@ To delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'http://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "http://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+UID: " . 'https://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
     if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
     
     $message = 'Transferred.';
