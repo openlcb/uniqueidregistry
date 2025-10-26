@@ -17,10 +17,56 @@ try {
 
   if (isset($_POST['send_request'])) {
     if ($user === null) {
-      if (!isset($_POST['g-recaptcha-response']) || !$_POST['g-recaptcha-response']) throw new UserException('Robots not allowed.');
-      $recaptcha = new \ReCaptcha\ReCaptcha(RECAPTCHA_SECRET);
-      $resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
-      if (!$resp->isSuccess()) throw new UserException('reCAPTCHA error');
+		if (!isset($_POST['cf-turnstile-response']) || !$_POST['cf-turnstile-response']) throw new UserException('Robots not allowed.');
+	
+	function validateTurnstile($token, $secret, $remoteip = null) {
+		$url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+	
+		$data = [
+			'secret' => $secret,
+			'response' => $token
+		];
+	
+		if ($remoteip) {
+			$data['remoteip'] = $remoteip;
+		}
+	
+		$options = [
+			'http' => [
+				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method' => 'POST',
+				'content' => http_build_query($data)
+			]
+		];
+	
+		$context = stream_context_create($options);
+		$response = file_get_contents($url, false, $context);
+	
+		if ($response === FALSE) {
+			return ['success' => false, 'error-codes' => ['internal-error']];
+		}
+	
+		return json_decode($response, true);
+	
+	}
+	
+	// Usage
+	$secret_key = TURNSTILE_SECRET_KEY;
+	$token = $_POST['cf-turnstile-response'] ;
+	
+	$validation = validateTurnstile($token, $secret_key);
+	
+	if ($validation['success']) {
+		// Valid token - process form
+		echo "Form submission successful!";
+		// Process your form data here
+	} else {
+		// Invalid token - show error
+		echo "Form validation failed";
+		error_log('Turnstile validation failed: ' . implode(', ', $validation['error-codes']));
+		throw new UserException("I do not think you are a Human.");
+	}
+
 
       if (!$_POST['email']) throw new UserException('Email address not entered.');
 
@@ -113,7 +159,7 @@ All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pend
     <!-- Custom styles for this template -->
     <link href="theme.css" rel="stylesheet"/>
 
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </head>
 
   <body>
@@ -181,7 +227,7 @@ if ($error !== null) {
           <input type="email" name="email" id="inputEmail" class="form-control input-sm" placeholder="Email address" required/>
           <label for="inputRepeatEmail" class="sr-only">Repeat email address</label>
           <input type="email" name="repeat_email" id="inputRepeatEmail" class="form-control input-sm" placeholder="Repeat email address" required/>
-          <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars(RECAPTCHA_SITE_KEY); ?>"></div>
+          <div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars(TURNSTILE_SITE_KEY); ?>"></div>
 <?php
   }
 ?>
