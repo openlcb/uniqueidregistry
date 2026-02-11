@@ -13,6 +13,9 @@ class ComposerAutoloaderInitad4675ea97eff0fcd01ae083fa14ff4b
         }
     }
 
+    /**
+     * @return \Composer\Autoload\ClassLoader
+     */
     public static function getLoader()
     {
         if (null !== self::$loader) {
@@ -20,23 +23,11 @@ class ComposerAutoloaderInitad4675ea97eff0fcd01ae083fa14ff4b
         }
 
         spl_autoload_register(array('ComposerAutoloaderInitad4675ea97eff0fcd01ae083fa14ff4b', 'loadClassLoader'), true, true);
-        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        self::$loader = $loader = new \Composer\Autoload\ClassLoader(\dirname(__DIR__));
         spl_autoload_unregister(array('ComposerAutoloaderInitad4675ea97eff0fcd01ae083fa14ff4b', 'loadClassLoader'));
 
-        $map = require __DIR__ . '/autoload_namespaces.php';
-        foreach ($map as $namespace => $path) {
-            $loader->set($namespace, $path);
-        }
-
-        $map = require __DIR__ . '/autoload_psr4.php';
-        foreach ($map as $namespace => $path) {
-            $loader->setPsr4($namespace, $path);
-        }
-
-        $classMap = require __DIR__ . '/autoload_classmap.php';
-        if ($classMap) {
-            $loader->addClassMap($classMap);
-        }
+        require __DIR__ . '/autoload_static.php';
+        call_user_func(\Composer\Autoload\ComposerStaticInitad4675ea97eff0fcd01ae083fa14ff4b::getInitializer($loader));
 
         $loader->register(true);
 
