@@ -7,24 +7,17 @@
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
   || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
   || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
-session_set_cookie_params([
-  'lifetime' => 0,
-  'path' => '/',
-  'domain' => '',
-  'secure' => $isHttps,
-  'httponly' => true,
-  'samesite' => 'Lax'
-]);
+session_set_cookie_params(0, '/', '', $isHttps, true);
 
 // Defaults; override in config.local.php (gitignored) to keep secrets out of Git
 $opts = ['hn' => '', 'un' => '', 'pw' => '', 'db' => ''];
 if (file_exists(__DIR__ . '/config.local.php')) {
   require_once __DIR__ . '/config.local.php';
 }
-$opts['hn'] = $opts['hn'] ?? '';
-$opts['un'] = $opts['un'] ?? '';
-$opts['pw'] = $opts['pw'] ?? '';
-$opts['db'] = $opts['db'] ?? '';
+$opts['hn'] = isset($opts['hn']) ? $opts['hn'] : '';
+$opts['un'] = isset($opts['un']) ? $opts['un'] : '';
+$opts['pw'] = isset($opts['pw']) ? $opts['pw'] : '';
+$opts['db'] = isset($opts['db']) ? $opts['db'] : '';
 
 // Cloudflare Turnstile – set in config.local.php to keep out of Git
 if (!defined('TURNSTILE_SITE_KEY'))   define('TURNSTILE_SITE_KEY', '');
