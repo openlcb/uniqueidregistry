@@ -1,0 +1,2 @@
+# Local config with secrets – copy config.local.php.example to config.local.php
+config.local.php

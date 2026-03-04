@@ -7,26 +7,27 @@
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
   || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
   || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
-if (PHP_VERSION_ID >= 70300) {
-  $sessionCookieParams = [
-    'lifetime' => 0,
-    'path' => '/',
-    'domain' => '',
-    'secure' => $isHttps,
-    'httponly' => true,
-    'samesite' => 'Lax'
-  ];
-  session_set_cookie_params($sessionCookieParams);
-} else {
-  session_set_cookie_params(0, '/', '', $isHttps, true);
+session_set_cookie_params([
+  'lifetime' => 0,
+  'path' => '/',
+  'domain' => '',
+  'secure' => $isHttps,
+  'httponly' => true,
+  'samesite' => 'Lax'
+]);
+
+// Defaults; override in config.local.php (gitignored) to keep secrets out of Git
+$opts = ['hn' => '', 'un' => '', 'pw' => '', 'db' => ''];
+if (file_exists(__DIR__ . '/config.local.php')) {
+  require_once __DIR__ . '/config.local.php';
 }
+$opts['hn'] = $opts['hn'] ?? '';
+$opts['un'] = $opts['un'] ?? '';
+$opts['pw'] = $opts['pw'] ?? '';
+$opts['db'] = $opts['db'] ?? '';
 
-$opts['hn'] = '';
-$opts['un'] = '';
-$opts['pw'] = '';  // filled in on host so not present in SVN
-$opts['db'] = '';
-
-define('RECAPTCHA_SITE_KEY', '');
-define('RECAPTCHA_SECRET', '');
+// Cloudflare Turnstile – set in config.local.php to keep out of Git
+if (!defined('TURNSTILE_SITE_KEY'))   define('TURNSTILE_SITE_KEY', '');
+if (!defined('TURNSTILE_SECRET_KEY')) define('TURNSTILE_SECRET_KEY', '');
 
 define('EMAIL_FROM', '"OpenLCB Registry" <registry@openlcb.org>');

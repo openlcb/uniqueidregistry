@@ -55,21 +55,14 @@ class DAL {
     if (!verifyPersonPassword($person, $password)) return false; //password wrong
     if ($remember) {
       $p = session_get_cookie_params();
-      if (PHP_VERSION_ID >= 70300) {
-        $params = [
-          'lifetime' => 60 * 60 * 24 * 366,
-          'path' => $p['path'],
-          'domain' => $p['domain'],
-          'secure' => $p['secure'],
-          'httponly' => $p['httponly']
-        ];
-        if (isset($p['samesite'])) {
-          $params['samesite'] = $p['samesite'];
-        }
-        session_set_cookie_params($params);
-      } else {
-        session_set_cookie_params(60 * 60 * 24 * 366, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
-      }
+      session_set_cookie_params([
+        'lifetime' => 60 * 60 * 24 * 366,
+        'path' => $p['path'],
+        'domain' => $p['domain'],
+        'secure' => $p['secure'],
+        'httponly' => $p['httponly'],
+        'samesite' => $p['samesite'] ?? 'Lax'
+      ]);
     }
     session_start();
     session_regenerate_id(); //create new session with possibly different expiry
@@ -87,21 +80,14 @@ class DAL {
     if ($person['person_email_shared_secret'] !== $person_email_shared_secret) return false; //email shared secret wrong
     if ($remember) {
       $p = session_get_cookie_params();
-      if (PHP_VERSION_ID >= 70300) {
-        $params = [
-          'lifetime' => 60 * 60 * 24 * 366,
-          'path' => $p['path'],
-          'domain' => $p['domain'],
-          'secure' => $p['secure'],
-          'httponly' => $p['httponly']
-        ];
-        if (isset($p['samesite'])) {
-          $params['samesite'] = $p['samesite'];
-        }
-        session_set_cookie_params($params);
-      } else {
-        session_set_cookie_params(60 * 60 * 24 * 366, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
-      }
+      session_set_cookie_params([
+        'lifetime' => 60 * 60 * 24 * 366,
+        'path' => $p['path'],
+        'domain' => $p['domain'],
+        'secure' => $p['secure'],
+        'httponly' => $p['httponly'],
+        'samesite' => $p['samesite'] ?? 'Lax'
+      ]);
     }
     session_start();
     session_regenerate_id(); //create new session with possibly different expiry

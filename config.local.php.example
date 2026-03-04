@@ -1,0 +1,16 @@
+<?php
+/**
+ * Local configuration (secrets and environment-specific values).
+ * Copy this file to config.local.php and set your values.
+ * config.local.php is gitignored and must not be committed.
+ */
+
+// Cloudflare Turnstile (register + request unique ID range forms)
+define('TURNSTILE_SITE_KEY', '');
+define('TURNSTILE_SECRET_KEY', '');
+
+// Optional: override database options (uncomment and set as needed)
+// $opts['hn'] = '127.0.0.1';
+// $opts['un'] = 'root';
+// $opts['pw'] = 'your-password';
+// $opts['db'] = 'your_database';
