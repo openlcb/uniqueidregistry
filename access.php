@@ -2,6 +2,12 @@
 
 // provide database access constants
 
+// Keep session data long enough for "remember me" (366 days). Otherwise the server
+// garbage-collects the session file after session.gc_maxlifetime (default ~24 min)
+// and the user appears logged out even though the cookie is still valid.
+define('SESSION_REMEMBER_LIFETIME', 60 * 60 * 24 * 366);
+ini_set('session.gc_maxlifetime', (string) SESSION_REMEMBER_LIFETIME);
+
 // Session cookie: must run before any session_start() (e.g. in DAL).
 // When behind Cloudflare over HTTPS, the origin often sees HTTP; trust X-Forwarded-Proto so the cookie gets Secure and is sent on subsequent requests.
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')

@@ -55,7 +55,8 @@ class DAL {
     if (!verifyPersonPassword($person, $password)) return false; //password wrong
     if ($remember) {
       $p = session_get_cookie_params();
-      session_set_cookie_params(60 * 60 * 24 * 366, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+      $lifetime = defined('SESSION_REMEMBER_LIFETIME') ? SESSION_REMEMBER_LIFETIME : (60 * 60 * 24 * 366);
+      session_set_cookie_params($lifetime, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
     }
     session_start();
     session_regenerate_id(); //create new session with possibly different expiry
@@ -73,7 +74,8 @@ class DAL {
     if ($person['person_email_shared_secret'] !== $person_email_shared_secret) return false; //email shared secret wrong
     if ($remember) {
       $p = session_get_cookie_params();
-      session_set_cookie_params(60 * 60 * 24 * 366, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+      $lifetime = defined('SESSION_REMEMBER_LIFETIME') ? SESSION_REMEMBER_LIFETIME : (60 * 60 * 24 * 366);
+      session_set_cookie_params($lifetime, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
     }
     session_start();
     session_regenerate_id(); //create new session with possibly different expiry
