@@ -36,13 +36,14 @@ try {
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 
 if (empty($top_unique_ids)) $message = 'None found.';
@@ -118,8 +119,8 @@ foreach ($top_unique_ids as $top_unique_id) {
           <tr>
             <td style="font-family: monospace; white-space: pre;"><a href="uniqueidrange?uniqueid_id=<?php echo $top_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($top_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($top_unique_id)); ?></td>
-            <td><?php echo htmlspecialchars($top_unique_id['uniqueid_url']); ?></td>
-            <td><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></td>
+            <td><?php echo htmlspecialchars((string) $top_unique_id['uniqueid_url']); ?></td>
+            <td><?php echo htmlspecialchars((string) $top_unique_id['uniqueid_user_comment']); ?></td>
           </tr>
 <?php
 }
@@ -130,7 +131,7 @@ if ($top) {
     if (count($sub_unique_ids) > 0) {
 ?>
           <tr>
-            <td colspan="4"><h3><?php echo htmlspecialchars($top_unique_id['uniqueid_user_comment']); ?></h3></td>
+            <td colspan="4"><h3><?php echo htmlspecialchars((string) $top_unique_id['uniqueid_user_comment']); ?></h3></td>
           </tr>
           <tr>
             <th>Range</th>
@@ -144,8 +145,8 @@ if ($top) {
           <tr>
             <td style="font-family: monospace; white-space: pre;"><a href="uniqueidrange?uniqueid_id=<?php echo $sub_unique_id['uniqueid_id']; ?>"><?php echo htmlspecialchars(formatUniqueIdHex($sub_unique_id)); ?></a></td>            
             <td><?php echo htmlspecialchars(formatPersonName($sub_unique_id)); ?></td>
-            <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_url']); ?></td>
-            <td><?php echo htmlspecialchars($sub_unique_id['uniqueid_user_comment']); ?></td>
+            <td><?php echo htmlspecialchars((string) $sub_unique_id['uniqueid_url']); ?></td>
+            <td><?php echo htmlspecialchars((string) $sub_unique_id['uniqueid_user_comment']); ?></td>
           </tr>
 <?php
       }        

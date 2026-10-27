@@ -6,7 +6,7 @@ class DAL {
 
   function __construct($host, $dbname, $username, $password) {
     session_start();
-    $this->db = new PDO('mysql:host=' . $host . ';dbname=' . $dbname, $username, $password);
+    $this->db = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8mb4', $username, $password);
     $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   }
 
@@ -39,8 +39,11 @@ class DAL {
   }
 
   function selectCurrentTimestamp() {
-    $row = $this->selectRow('SELECT CURRENT_TIMESTAMP');
-    return $row['CURRENT_TIMESTAMP'];
+    $row = $this->selectRow('SELECT CURRENT_TIMESTAMP AS ts');
+    if ($row === null || !isset($row['ts'])) {
+      throw new RuntimeException('Failed to read current timestamp from database.');
+    }
+    return $row['ts'];
   }
 
   function selectUser() {
@@ -49,6 +52,8 @@ class DAL {
 
   function login($email, $password, $remember = false) {
     $this->logout();
+    // Reject non-scalar input (e.g. ?email[]=...) instead of letting PDO fail.
+    if (!is_string($email) || !is_string($password)) return false;
     
     $person = $this->selectPersonByEmail($email);
     if ($person === null) return false; //person not found
@@ -56,10 +61,17 @@ class DAL {
     if ($remember) {
       $p = session_get_cookie_params();
       $lifetime = defined('SESSION_REMEMBER_LIFETIME') ? SESSION_REMEMBER_LIFETIME : (60 * 60 * 24 * 366);
-      session_set_cookie_params($lifetime, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+      session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => $p['path'],
+        'domain' => $p['domain'],
+        'secure' => $p['secure'],
+        'httponly' => $p['httponly'],
+        'samesite' => isset($p['samesite']) ? $p['samesite'] : 'Lax',
+      ]);
     }
     session_start();
-    session_regenerate_id(); //create new session with possibly different expiry
+    session_regenerate_id(true); //create new session with possibly different expiry
     $_SESSION['person_id'] = $person['person_id'];
     $_SESSION['remember'] = $remember;
 
@@ -68,17 +80,30 @@ class DAL {
 
   function loginWithEmailSharedSecret($person_id, $person_email_shared_secret, $remember = false) {
     $this->logout();
-    
+
+    // A missing or empty secret must never match a NULL/empty stored secret.
+    // Otherwise "?verify=1&person_id=N" would log in as any account with no secret set.
+    if (!is_scalar($person_id) || (string) $person_id === '') return false;
+    if (!is_string($person_email_shared_secret) || $person_email_shared_secret === '') return false;
+
     $person = $this->selectPersonById($person_id);
     if ($person === null) return false; //person not found
-    if ($person['person_email_shared_secret'] !== $person_email_shared_secret) return false; //email shared secret wrong
+    if (!isset($person['person_email_shared_secret']) || $person['person_email_shared_secret'] === '') return false;
+    if (!hash_equals((string) $person['person_email_shared_secret'], $person_email_shared_secret)) return false; //email shared secret wrong
     if ($remember) {
       $p = session_get_cookie_params();
       $lifetime = defined('SESSION_REMEMBER_LIFETIME') ? SESSION_REMEMBER_LIFETIME : (60 * 60 * 24 * 366);
-      session_set_cookie_params($lifetime, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+      session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => $p['path'],
+        'domain' => $p['domain'],
+        'secure' => $p['secure'],
+        'httponly' => $p['httponly'],
+        'samesite' => isset($p['samesite']) ? $p['samesite'] : 'Lax',
+      ]);
     }
     session_start();
-    session_regenerate_id(); //create new session with possibly different expiry
+    session_regenerate_id(true); //create new session with possibly different expiry
     $_SESSION['person_id'] = $person['person_id'];
     $_SESSION['remember'] = $remember;
 
@@ -93,18 +118,23 @@ class DAL {
 
   function insertPerson(&$person) {
     $person['person_created'] = $this->selectCurrentTimestamp();
+    if (!isset($person['person_request_IP_address'])) {
+      $person['person_request_IP_address'] = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+    }
     $this->update('INSERT INTO Person (
   person_created,
   person_first_name,
   person_last_name,
   person_organization,
   person_email,
+  person_request_IP_address,
   person_password_hash,
   person_subscribe,
   person_email_verified,
   person_email_shared_secret
 )
 VALUES (
+  ?,
   ?,
   ?,
   ?,
@@ -120,6 +150,7 @@ VALUES (
       $person['person_last_name'],
       $person['person_organization'],
       $person['person_email'],
+      $person['person_request_IP_address'],
       $person['person_password_hash'],
       $person['person_subscribe'],
       $person['person_email_verified'],
@@ -129,6 +160,7 @@ VALUES (
   }
 
   function selectPersonById($person_id) {
+    if (!is_scalar($person_id) || (string) $person_id === '') return null;
     return $this->selectRow('SELECT
   *,
   (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
@@ -140,6 +172,7 @@ WHERE
   }
     
   function selectPersonByEmail($email) {
+    if (!is_scalar($email) || (string) $email === '') return null;
     return $this->selectRow('SELECT
   *,
   (SELECT COUNT(*) FROM UniqueIDs WHERE UniqueIDs.person_id = Person.person_id) person_uniqueid_count,
@@ -288,6 +321,7 @@ WHERE
   }
 
   function selectUniqueId($uniqueid_id) {
+    if (!is_scalar($uniqueid_id) || (string) $uniqueid_id === '') return null;
     return $this->selectRow('SELECT
   UniqueIDs.*,
   Person.person_organization,
@@ -353,6 +387,7 @@ ORDER BY
   }
 
   function selectUniqueIdsByPerdonId($person_id) {
+    if (!is_scalar($person_id)) return array();
     return $this->select('SELECT
   UniqueIDs.*,
   Person.person_organization,

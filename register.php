@@ -12,9 +12,13 @@ $user = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-    
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   if (isset($_GET['verify'])) {
-    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'] ?? null, $_GET['person_email_shared_secret'] ?? null)) throw new UserException('Login failed.');
   }
 
   $user = $dal->selectUser();
@@ -38,12 +42,15 @@ try {
 			'http' => [
 				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
 				'method' => 'POST',
-				'content' => http_build_query($data)
+				'content' => http_build_query($data),
+				// Never let a slow/unreachable Cloudflare endpoint stall the request.
+				'timeout' => 10
 			]
 		];
 	
 		$context = stream_context_create($options);
-		$response = file_get_contents($url, false, $context);
+		// Suppress the E_WARNING on network failure; we handle the false return below.
+		$response = @file_get_contents($url, false, $context);
 	
 		if ($response === FALSE) {
 			return ['success' => false, 'error-codes' => ['internal-error']];
@@ -55,43 +62,41 @@ try {
 	
 	// Usage
 	$secret_key = TURNSTILE_SECRET_KEY;
-	$token = $_POST['cf-turnstile-response'] ;
+	$token = $_POST['cf-turnstile-response'] ?? '';
 	
 	$validation = validateTurnstile($token, $secret_key);
 	
-	if ($validation['success']) {
-		// Valid token - process form
-		echo "Form submission successful!";
-		// Process your form data here
-	} else {
-		// Invalid token - show error
-		echo "Form validation failed";
-		error_log('Turnstile validation failed: ' . implode(', ', $validation['error-codes']));
+	if (!is_array($validation) || empty($validation['success'])) {
+		$codes = (is_array($validation) && isset($validation['error-codes']) && is_array($validation['error-codes']))
+			? implode(', ', $validation['error-codes'])
+			: 'unknown';
+		error_log('Turnstile validation failed: ' . $codes);
 		throw new UserException("I do not think you are a Human.");
 	}
 
-    if (!$_POST['email']) throw new UserException('Email address not entered.');
-    if (strlen($_POST['password']) < 8) throw new UserException('Password must be at least 8 characters long.');
+    $email = normalizeEmail($_POST['email'] ?? '');
+    if ($email === null) throw new UserException('Please enter a valid email address.');
+    if (strlen($_POST['password'] ?? '') < 8) throw new UserException('Password must be at least 8 characters long.');
 
-    if ($_POST['email'] !== $_POST['repeat_email']) throw new UserException('The entered email addresses do not match.');
-    if ($_POST['password'] !== $_POST['repeat_password']) throw new UserException('The entered passwords do not match.');
-    if ($dal->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use.');
+    if ($email !== normalizeEmail($_POST['repeat_email'] ?? '')) throw new UserException('The entered email addresses do not match.');
+    if (($_POST['password'] ?? '') !== ($_POST['repeat_password'] ?? '')) throw new UserException('The entered passwords do not match.');
+    if ($dal->selectPersonByEmail($email) !== null) throw new UserException('The entered email address is already in use.');
 
     $person = array(
-      'person_first_name' => $_POST['first_name'],
-      'person_last_name' => $_POST['last_name'],
-      'person_organization' => $_POST['organization'],
-      'person_email' => $_POST['email'],
+      'person_first_name' => $_POST['first_name'] ?? null,
+      'person_last_name' => $_POST['last_name'] ?? null,
+      'person_organization' => $_POST['organization'] ?? null,
+      'person_email' => $email,
       'person_subscribe' => isset($_POST['subscribe']) ? 'y' : 'n',
       'person_email_verified' => 'n',
       'person_email_shared_secret' => randHex()
     );
     
-    setPersonPassword($person, $_POST['password']);
+    setPersonPassword($person, (string) ($_POST['password'] ?? ''));
 
     $dal->insertPerson($person);
     
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/register?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = registry_public_base_url() . "/register?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Register as OpenLCB User";
@@ -117,13 +122,14 @@ The OpenLCB Group";
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -170,6 +176,7 @@ if ($error !== null) {
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <div class="form-group">
           <label for="inputFirstName" class="sr-only">First name</label>
           <input type="text" name="first_name" id="inputFirstName" class="form-control input-sm" placeholder="First name" required autofocus/>

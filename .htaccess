@@ -1,5 +1,29 @@
 RewriteEngine On
+
+# --- Deny access to non-public files -----------------------------------------
+# VCS / IDE metadata directories (.git, .idea, ...)
+RewriteRule (^|/)\.(git|idea|hg|svn)(/|$) - [F,L]
+
+# Repository / tooling / documentation files
+RewriteRule (^|/)\.(gitignore|htaccess|DS_Store)$ - [F,L]
+RewriteRule (^|/)composer\.(json|lock)$ - [F,L]
+RewriteRule (^|/)config\.local\.php$ - [F,L]
+RewriteRule \.(md|sql)$ - [F,L]
+
+# --- Extensionless URLs: /login -> login.php ---------------------------------
+# The !\.php$ guard is essential: [L] restarts the rewrite pass, and when the
+# REQUEST_FILENAME check is not refreshed (proxy/FPM, inherited rewrites) the
+# rule re-fires forever and Apache logs "AH00124: Request exceeded the limit of
+# 10 internal redirects". Because the substitution always appends .php, the
+# guard makes this rule fire at most once per request. [END] (Apache 2.4+)
+# additionally stops all further passes.
+RewriteCond %{REQUEST_URI} !\.php$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^.*$ $0.php [NC,L,QSA]
+RewriteRule ^(.+)$ $1.php [END,QSA]
+
+# NOTE: if the hosting control panel adds PHP handler lines (e.g.
+# "AddHandler application/x-httpd-php84 .php") to this file, keep them. Do not
+# replace this file wholesale on the server without preserving those lines, or
+# the site falls back to the default PHP version.

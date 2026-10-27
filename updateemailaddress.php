@@ -12,9 +12,13 @@ $person = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-    
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   if (isset($_GET['verify'])) {
-    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'] ?? null, $_GET['person_email_shared_secret'] ?? null)) throw new UserException('Login failed.');
   }
 
   $user = $dal->selectUser();
@@ -27,20 +31,22 @@ try {
     $person = $user;
   }
   
-  if ($user['person_id'] !== $person['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+  if (!registry_same_id($user['person_id'], $person['person_id']) && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
   
   if (isset($_POST['send_verification_email'])) {
-    if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
-    if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
-    if ($dal->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
+    $new_email = normalizeEmail($_POST['new_email'] ?? '');
+    if ($new_email === null) throw new UserException('Please enter a valid email address.');
+    if ($new_email !== normalizeEmail($_POST['repeat_new_email'] ?? '')) throw new UserException('The entered email addresses do not match.');
+    if ($person['person_email'] === $new_email) throw new UserException('The entered email addresses is the same as the current email address.');
+    if ($dal->selectPersonByEmail($new_email) !== null) throw new UserException('The entered email address is already in use.');
 
     $person['person_email_shared_secret'] = randHex();
-    $person['person_email'] = $_POST['new_email'];
+    $person['person_email'] = $new_email;
     $person['person_email_verified'] = 'n';
     
     $dal->updatePerson($person);
     
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/updateemailaddress?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    $url = registry_public_base_url() . "/updateemailaddress?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Update OpenLCB User Email Address";
@@ -54,12 +60,14 @@ The OpenLCB Group";
     
     $message = 'Email address updated and verification email sent.';
   } else if (isset($_POST['update'])) {
-    if ($_POST['new_email'] !== $_POST['repeat_new_email']) throw new UserException('The entered email addresses do not match.');
-    if ($person['person_email'] === $_POST['new_email']) throw new UserException('The entered email addresses is the same as the current email address.');
-    if ($dal->selectPersonByEmail($_POST['new_email']) !== null) throw new UserException('The entered email address is already in use.');
+    $new_email = normalizeEmail($_POST['new_email'] ?? '');
+    if ($new_email === null) throw new UserException('Please enter a valid email address.');
+    if ($new_email !== normalizeEmail($_POST['repeat_new_email'] ?? '')) throw new UserException('The entered email addresses do not match.');
+    if ($person['person_email'] === $new_email) throw new UserException('The entered email addresses is the same as the current email address.');
+    if ($dal->selectPersonByEmail($new_email) !== null) throw new UserException('The entered email address is already in use.');
 
     $person['person_email_shared_secret'] = randHex();
-    $person['person_email'] = $_POST['new_email'];
+    $person['person_email'] = $new_email;
     $person['person_email_verified'] = 'n';
     
     $dal->updatePerson($person);
@@ -75,13 +83,14 @@ The OpenLCB Group";
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -120,20 +129,21 @@ if ($person !== null) {
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="updateemailaddress<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updateemailaddress<?php if ($user !== null && $person !== null && !registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="updateemailaddress<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="updateemailaddress<?php if ($user !== null && $person !== null && !registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <div class="form-group">
           <label for="inputEmail" class="sr-only">New email address</label>
           <input type="email" name="new_email" id="inputEmail" class="form-control input-sm" placeholder="New email address" required autofocus/>

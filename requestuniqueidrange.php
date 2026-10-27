@@ -12,7 +12,11 @@ $user = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-  
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   $user = $dal->selectUser();
 
   if (isset($_POST['send_request'])) {
@@ -35,12 +39,15 @@ try {
 			'http' => [
 				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
 				'method' => 'POST',
-				'content' => http_build_query($data)
+				'content' => http_build_query($data),
+				// Never let a slow/unreachable Cloudflare endpoint stall the request.
+				'timeout' => 10
 			]
 		];
 	
 		$context = stream_context_create($options);
-		$response = file_get_contents($url, false, $context);
+		// Suppress the E_WARNING on network failure; we handle the false return below.
+		$response = @file_get_contents($url, false, $context);
 	
 		if ($response === FALSE) {
 			return ['success' => false, 'error-codes' => ['internal-error']];
@@ -52,32 +59,30 @@ try {
 	
 	// Usage
 	$secret_key = TURNSTILE_SECRET_KEY;
-	$token = $_POST['cf-turnstile-response'] ;
+	$token = $_POST['cf-turnstile-response'] ?? '';
 	
 	$validation = validateTurnstile($token, $secret_key);
 	
-	if ($validation['success']) {
-		// Valid token - process form
-		echo "Form submission successful!";
-		// Process your form data here
-	} else {
-		// Invalid token - show error
-		echo "Form validation failed";
-		error_log('Turnstile validation failed: ' . implode(', ', $validation['error-codes']));
+	if (!is_array($validation) || empty($validation['success'])) {
+		$codes = (is_array($validation) && isset($validation['error-codes']) && is_array($validation['error-codes']))
+			? implode(', ', $validation['error-codes'])
+			: 'unknown';
+		error_log('Turnstile validation failed: ' . $codes);
 		throw new UserException("I do not think you are a Human.");
 	}
 
 
-      if (!$_POST['email']) throw new UserException('Email address not entered.');
+      $email = normalizeEmail($_POST['email'] ?? '');
+      if ($email === null) throw new UserException('Please enter a valid email address.');
 
-      if ($_POST['email'] !== $_POST['repeat_email']) throw new UserException('The entered email addresses do not match.');
-      if ($dal->selectPersonByEmail($_POST['email']) !== null) throw new UserException('The entered email address is already in use. Please login before requesting an unique id range.');
+      if ($email !== normalizeEmail($_POST['repeat_email'] ?? '')) throw new UserException('The entered email addresses do not match.');
+      if ($dal->selectPersonByEmail($email) !== null) throw new UserException('The entered email address is already in use. Please login before requesting an unique id range.');
     
       $person = array(
-        'person_first_name' => $_POST['first_name'],
-        'person_last_name' => $_POST['last_name'],
-        'person_organization' => $_POST['organization'],
-        'person_email' => $_POST['email'],
+        'person_first_name' => $_POST['first_name'] ?? null,
+        'person_last_name' => $_POST['last_name'] ?? null,
+        'person_organization' => $_POST['organization'] ?? null,
+        'person_email' => $email,
         'person_subscribe' => isset($_POST['subscribe']) ? 'y' : 'n',
         'person_email_verified' => 'n',
         'person_email_shared_secret' => null,
@@ -93,8 +98,8 @@ try {
 
     $unique_id = array(
       'person_id' => $person['person_id'],
-      'uniqueid_url' => $_POST['url'],
-      'uniqueid_user_comment' => $_POST['comment']
+      'uniqueid_url' => $_POST['url'] ?? '',
+      'uniqueid_user_comment' => $_POST['comment'] ?? ''
     );
 
     $dal->insertUniqueId($unique_id);
@@ -121,8 +126,8 @@ Delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'https://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+UID: " . registry_public_base_url() . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . registry_public_base_url() . '/uniqueidranges?pending';
     if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');    
     
     $message = 'Your assigned range is: ' . formatUniqueIdHex($unique_id);
@@ -132,13 +137,14 @@ All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pend
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -213,6 +219,7 @@ if ($error !== null) {
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <div class="form-group">
 <?php
   if ($user === null) {

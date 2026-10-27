@@ -12,18 +12,24 @@ $unique_id = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-  
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   $user = $dal->selectUser();
   
-  $unique_id = $dal->selectUniqueId($_GET['uniqueid_id']);
+  $uniqueid_id = $_GET['uniqueid_id'] ?? null;
+  if ($uniqueid_id === null) throw new UserException('Missing uniqueid_id parameter.');
+  $unique_id = $dal->selectUniqueId($uniqueid_id);
   if ($unique_id === null) throw new UserException('Range not found.');
 
   if (isset($_POST['save'])) {
     if ($user === null) throw new UserException('Login required.');
     if ($user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');  
     
-    $unique_id['uniqueid_url']          = $_POST['uniqueid_url'];
-    $unique_id['uniqueid_user_comment'] = $_POST['uniqueid_user_comment'];
+    $unique_id['uniqueid_url']          = $_POST['uniqueid_url'] ?? '';
+    $unique_id['uniqueid_user_comment'] = $_POST['uniqueid_user_comment'] ?? '';
 
     $dal->updateUniqueId($unique_id);
 
@@ -60,8 +66,8 @@ Delegating organization or person: " . formatPersonName($unique_id) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'https://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+UID: " . registry_public_base_url() . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . registry_public_base_url() . '/uniqueidranges?pending';
     if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
     
     $message = 'Approved.';
@@ -77,13 +83,14 @@ All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pend
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -129,6 +136,7 @@ if ($error !== null) {
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <h3 style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></h3>
         <table class="table table-condensed">
           <tbody>
@@ -137,11 +145,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="uniqueid_url" class="form-control input-sm" value="<?php echo htmlspecialchars($unique_id['uniqueid_url']); ?>"/></td>
+              <td><input name="uniqueid_url" class="form-control input-sm" value="<?php echo htmlspecialchars((string) $unique_id['uniqueid_url']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($unique_id['uniqueid_url']); ?></td>
+              <td><?php echo htmlspecialchars((string) $unique_id['uniqueid_url']); ?></td>
 <?php
   }
 ?>
@@ -152,11 +160,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><textarea name="uniqueid_user_comment" class="form-control input-sm" oninput="this.rows = 2; this.style.height = '0'; this.style.height = this.scrollHeight + 2 + 18 + 'px';"><?php echo htmlspecialchars($unique_id['uniqueid_user_comment']); ?></textarea></td>
+              <td><textarea name="uniqueid_user_comment" class="form-control input-sm" oninput="this.rows = 2; this.style.height = '0'; this.style.height = this.scrollHeight + 2 + 18 + 'px';"><?php echo htmlspecialchars((string) $unique_id['uniqueid_user_comment']); ?></textarea></td>
 <?php
   } else {
 ?>
-              <td><?php echo nl2br(htmlspecialchars($unique_id['uniqueid_user_comment'])); ?></td>
+              <td><?php echo nl2br(htmlspecialchars((string) $unique_id['uniqueid_user_comment'])); ?></td>
 <?php
   }
 ?>
@@ -181,11 +189,11 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Updated</th>
-              <td><?php echo htmlspecialchars($unique_id['last_updated']); ?></td>
+              <td><?php echo htmlspecialchars((string) $unique_id['last_updated']); ?></td>
             </tr>
             <tr>
               <th>Approved</th>
-              <td><?php echo htmlspecialchars($unique_id['uniqueid_approved']); ?></td>
+              <td><?php echo htmlspecialchars((string) $unique_id['uniqueid_approved']); ?></td>
             </tr>
             <tr>
               <th>Approved by</th>

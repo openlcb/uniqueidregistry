@@ -1,14 +1,20 @@
 <?php
-require_once('access.php');
+require_once __DIR__ . '/access.php';
+require_once __DIR__ . '/legacy_common.php';
 
-// open DB
 global $opts;
-mysql_connect($opts['hn'],$opts['un'],$opts['pw']);
-@mysql_select_db($opts['db']) or die( "Unable to select database. Error (" . mysql_errno() . ") " . mysql_error());
+$mysqli = legacy_db_connect($opts);
+if ($mysqli === null) {
+  header('Content-Type: application/xml; charset=utf-8');
+  echo '<uidranges/>';
+  exit;
+}
 
-function value($result, $j, $index) {
-  if (255 == mysql_result($result, $j, "uniqueid_byte" . $index . "_mask")) return "*";
-  else return mysql_result($result, $j, "uniqueid_byte" . $index . "_value");
+function value_from_row($row, $index) {
+  if (255 == (int) $row['uniqueid_byte' . $index . '_mask']) {
+    return '*';
+  }
+  return $row['uniqueid_byte' . $index . '_value'];
 }
 
 $query = "SELECT *
@@ -22,30 +28,36 @@ ORDER BY
   uniqueid_byte3_value,
   uniqueid_byte4_value,
   uniqueid_byte5_value;";
-$result = mysql_query($query);
+$result = $mysqli->query($query);
+if (!$result) {
+  header('Content-Type: application/xml; charset=utf-8');
+  echo '<uidranges/>';
+  exit;
+}
 
-header('Content-Type: application/xml');
+header('Content-Type: application/xml; charset=utf-8');
 
 echo "<uidranges>\n";
 echo "<!-- '*' means that any values are accepted in that byte, forming the range.-->\n";
 
-for ($j = 0; $j < mysql_numrows($result); $j++) {
+while ($row = $result->fetch_assoc()) {
   echo '<uidrange>';
-  echo '<byte0>' . htmlspecialchars(value($result, $j, "0")) . '</byte0>';
-  echo '<byte1>' . htmlspecialchars(value($result, $j, "1")) . '</byte1>';
-  echo '<byte2>' . htmlspecialchars(value($result, $j, "2")) . '</byte2>';
-  echo '<byte3>' . htmlspecialchars(value($result, $j, "3")) . '</byte3>';
-  echo '<byte4>' . htmlspecialchars(value($result, $j, "4")) . '</byte4>';
-  echo '<byte5>' . htmlspecialchars(value($result, $j, "5")) . '</byte5>';
-  if (mysql_result($result, $j, "person_organization") != '') {
-    echo '<organization>' . htmlspecialchars(mysql_result($result, $j, "person_organization")) . '</organization>';
+  echo '<byte0>' . htmlspecialchars((string) value_from_row($row, '0'), ENT_QUOTES, 'UTF-8') . '</byte0>';
+  echo '<byte1>' . htmlspecialchars((string) value_from_row($row, '1'), ENT_QUOTES, 'UTF-8') . '</byte1>';
+  echo '<byte2>' . htmlspecialchars((string) value_from_row($row, '2'), ENT_QUOTES, 'UTF-8') . '</byte2>';
+  echo '<byte3>' . htmlspecialchars((string) value_from_row($row, '3'), ENT_QUOTES, 'UTF-8') . '</byte3>';
+  echo '<byte4>' . htmlspecialchars((string) value_from_row($row, '4'), ENT_QUOTES, 'UTF-8') . '</byte4>';
+  echo '<byte5>' . htmlspecialchars((string) value_from_row($row, '5'), ENT_QUOTES, 'UTF-8') . '</byte5>';
+  if ($row['person_organization'] !== '' && $row['person_organization'] !== null) {
+    echo '<organization>' . htmlspecialchars((string) $row['person_organization'], ENT_QUOTES, 'UTF-8') . '</organization>';
   } else {
-    echo '<firstname>' . htmlspecialchars(mysql_result($result, $j, "person_first_name")) . '</firstname>';
-    echo '<lastname>' . htmlspecialchars(mysql_result($result, $j, "person_last_name")) . '</lastname>';
+    echo '<firstname>' . htmlspecialchars((string) $row['person_first_name'], ENT_QUOTES, 'UTF-8') . '</firstname>';
+    echo '<lastname>' . htmlspecialchars((string) $row['person_last_name'], ENT_QUOTES, 'UTF-8') . '</lastname>';
   }
-  echo '<url>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_url")).'</url>';
-  echo '<comment>' . htmlspecialchars(mysql_result($result, $j, "uniqueid_user_comment")).'</comment>';
+  echo '<url>' . htmlspecialchars((string) $row['uniqueid_url'], ENT_QUOTES, 'UTF-8') . '</url>';
+  echo '<comment>' . htmlspecialchars((string) $row['uniqueid_user_comment'], ENT_QUOTES, 'UTF-8') . '</comment>';
   echo "</uidrange>\n";
 }
 
 echo "</uidranges>\n";
+$mysqli->close();

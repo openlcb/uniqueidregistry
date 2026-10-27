@@ -12,17 +12,25 @@ $unique_id = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-  
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   $user = $dal->selectUser();
   if ($user === null) throw new UserException('Login required.');
   
-  $unique_id = $dal->selectUniqueId($_GET['uniqueid_id']);
+  $uniqueid_id = $_GET['uniqueid_id'] ?? null;
+  if ($uniqueid_id === null) throw new UserException('Missing uniqueid_id parameter.');
+  $unique_id = $dal->selectUniqueId($uniqueid_id);
   if ($unique_id === null) throw new UserException('Range not found.');
 
-  if ($user['person_id'] !== $unique_id['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');  
+  if (!registry_same_id($user['person_id'], $unique_id['person_id']) && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');  
 
   if (isset($_POST['transfer'])) {
-    $person = $dal->selectPersonByEmail($_POST['email']);
+    $email = normalizeEmail($_POST['email'] ?? '');
+    if ($email === null) throw new UserException('Please enter a valid email address.');
+    $person = $dal->selectPersonByEmail($email);
     if ($person === null) throw new UserException('Profile not found.');
     
     $unique_id['person_id'] = $person['person_id'];
@@ -69,8 +77,8 @@ To delegating organization or person: " . formatPersonName($person) . "
 URL: " . $unique_id['uniqueid_url'] . "
 Comment: " . $unique_id['uniqueid_user_comment'] . "
 
-UID: " . 'https://' . $_SERVER['HTTP_HOST'] . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
-All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pending';
+UID: " . registry_public_base_url() . '/uniqueidrange?uniqueid_id=' . $unique_id['uniqueid_id'] . "
+All pending UIDs: " . registry_public_base_url() . '/uniqueidranges?pending';
     if (!mail_abstraction(array_map('formatPersonEmail', $dal->selectModerators()), $subject, $body, array( EMAIL_FROM ))) throw new UserError('Failed to send email.');
     
     $message = 'Transferred.';
@@ -78,13 +86,14 @@ All pending UIDs: " . "https://" . $_SERVER['HTTP_HOST'] . '/uniqueidranges?pend
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -130,6 +139,7 @@ if ($error !== null) {
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <h3 style="font-family: monospace; white-space: pre;"><?php echo htmlspecialchars(formatUniqueIdHex($unique_id)); ?></h3>
         <div class="form-group">
           <label for="inputEmail" class="sr-only">Email address</label>

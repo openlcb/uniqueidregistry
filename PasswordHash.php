@@ -30,7 +30,8 @@ class PasswordHash {
 	var $portable_hashes;
 	var $random_state;
 
-	function PasswordHash($iteration_count_log2, $portable_hashes)
+	// PHP 8 removed PHP 4-style constructors, so this MUST be __construct.
+	function __construct($iteration_count_log2, $portable_hashes)
 	{
 		$this->itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -48,12 +49,11 @@ class PasswordHash {
 	function get_random_bytes($count)
 	{
 		$output = '';
-        //This doesn't work with Interspeed hosting.
-		/*if (is_readable('/dev/urandom') &&
+		if (is_readable('/dev/urandom') &&
 		    ($fh = @fopen('/dev/urandom', 'rb'))) {
 			$output = fread($fh, $count);
 			fclose($fh);
-		}*/
+		}
 
 		if (strlen($output) < $count) {
 			$output = '';
@@ -178,7 +178,7 @@ class PasswordHash {
 		$itoa64 = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 		$output = '$2a$';
-		$output .= chr(ord('0') + $this->iteration_count_log2 / 10);
+		$output .= chr(ord('0') + intdiv($this->iteration_count_log2, 10));
 		$output .= chr(ord('0') + $this->iteration_count_log2 % 10);
 		$output .= '$';
 

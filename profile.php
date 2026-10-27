@@ -12,9 +12,13 @@ $person = null;
 $dal = new DAL($opts['hn'], $opts['db'], $opts['un'], $opts['pw']);
 try {
   $dal->beginTransaction();
-  
+  ensure_csrf_token();
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
+    throw new UserException('Invalid session. Please try again.');
+  }
+
   if (isset($_GET['verify'])) {
-    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'], $_GET['person_email_shared_secret'])) throw new UserException('Login failed.');
+    if (!$dal->loginWithEmailSharedSecret($_GET['person_id'] ?? null, $_GET['person_email_shared_secret'] ?? null)) throw new UserException('Login failed.');
   }
   
   $user = $dal->selectUser();
@@ -27,14 +31,14 @@ try {
     $person = $user;
   }
   
-  if ($user['person_id'] !== $person['person_id'] && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
+  if (!registry_same_id($user['person_id'], $person['person_id']) && $user['person_is_moderator'] !== 'y') throw new UserException('Moderator login required.');
 
   if (isset($_POST['save'])) {
-    $person['person_first_name']   = $_POST['person_first_name'];
-    $person['person_last_name']    = $_POST['person_last_name'];
-    $person['person_organization'] = $_POST['person_organization'];
+    $person['person_first_name']   = $_POST['person_first_name'] ?? '';
+    $person['person_last_name']    = $_POST['person_last_name'] ?? '';
+    $person['person_organization'] = $_POST['person_organization'] ?? '';
     if ($user['person_is_moderator'] === 'y') {
-      $person['person_is_moderator'] = $_POST['person_is_moderator'];
+      $person['person_is_moderator'] = (($_POST['person_is_moderator'] ?? 'n') === 'y') ? 'y' : 'n';
     }
 
     $dal->updatePerson($person);
@@ -64,7 +68,11 @@ try {
     }
     exit;
   } else if (isset($_POST['send_verification_email'])) {
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/profile?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
+    if (!$person['person_email_shared_secret']) {
+      $person['person_email_shared_secret'] = randHex();
+      $dal->updatePerson($person);
+    }
+    $url = registry_public_base_url() . "/profile?person_id=" . $person['person_id'] . "&person_email_shared_secret=" . $person['person_email_shared_secret'] . '&verify';
     $name = formatPersonName($person);
     $email = formatPersonEmail($person);
     $subject = "Register as OpenLCB User";
@@ -87,13 +95,14 @@ The OpenLCB Group";
 
   $dal->commit();
 } catch (UserException $e) {
-  $dal->rollback();
-  
+  registry_rollback_dal($dal);
   $error = $e->getMessage();
-} catch (Exception $e) {
-  $dal->rollback();
-
-  throw $e;
+} catch (UserError $e) {
+  registry_rollback_dal($dal);
+  $error = $e->getMessage();
+} catch (Throwable $e) {
+  registry_rollback_dal($dal);
+  $error = registry_user_error_from_exception($e);
 }
 ?>
 <!DOCTYPE html>
@@ -125,20 +134,21 @@ include('navbar.php');
 if ($error !== null) {
 ?>
       <div class="alert alert-danger">
-        <a href="profile<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="profile<?php if ($user !== null && $person !== null && !registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($error); ?>
       </div>
 <?php
 } else if ($message !== null) {
 ?>
       <div class="alert alert-info">
-        <a href="profile<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
+        <a href="profile<?php if ($user !== null && $person !== null && !registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <?php echo htmlspecialchars($message); ?>
       </div>
 <?php
 } else {
 ?>
       <form method="POST">
+        <?php echo csrf_field(); ?>
         <h3><?php echo htmlspecialchars(formatPersonName($person)); ?></h3>
         <table class="table table-condensed">
           <tbody>
@@ -147,11 +157,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_first_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_first_name']); ?>"/></td>
+              <td><input name="person_first_name" class="form-control input-sm" value="<?php echo htmlspecialchars((string) $person['person_first_name']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_first_name']); ?></td>
+              <td><?php echo htmlspecialchars((string) $person['person_first_name']); ?></td>
 <?php
   }
 ?>
@@ -161,11 +171,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_last_name" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_last_name']); ?>"/></td>
+              <td><input name="person_last_name" class="form-control input-sm" value="<?php echo htmlspecialchars((string) $person['person_last_name']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_last_name']); ?></td>
+              <td><?php echo htmlspecialchars((string) $person['person_last_name']); ?></td>
 <?php
   }
 ?>
@@ -175,11 +185,11 @@ if ($error !== null) {
 <?php
   if (isset($_POST['edit'])) {
 ?>
-              <td><input name="person_organization" class="form-control input-sm" value="<?php echo htmlspecialchars($person['person_organization']); ?>"/></td>
+              <td><input name="person_organization" class="form-control input-sm" value="<?php echo htmlspecialchars((string) $person['person_organization']); ?>"/></td>
 <?php
   } else {
 ?>
-              <td><?php echo htmlspecialchars($person['person_organization']); ?></td>
+              <td><?php echo htmlspecialchars((string) $person['person_organization']); ?></td>
 <?php
   }
 ?>
@@ -219,7 +229,7 @@ if ($error !== null) {
             </tr>
             <tr>
               <th>Updated</th>
-              <td><?php echo htmlspecialchars($person['last_updated']); ?></td>
+              <td><?php echo htmlspecialchars((string) $person['last_updated']); ?></td>
             </tr>
             <tr>
               <th>Unique ID ranges</th>
@@ -238,10 +248,10 @@ if ($error !== null) {
         <a href="uniqueidranges<?php echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-erase"></span> Show unique ID ranges</a>
         <button type="submit" name="edit" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span> Edit</button>
 <?php
-    if ($user['person_id'] === $person['person_id'] || $user['person_is_moderator'] === 'y') {
+    if (registry_same_id($user['person_id'], $person['person_id']) || $user['person_is_moderator'] === 'y') {
 ?>
-        <a href="updateemailaddress<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
-        <a href="updatepassword<?php if ($user['person_id'] !== $person['person_id']) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
+        <a href="updateemailaddress<?php if (!registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update email address</a>
+        <a href="updatepassword<?php if (!registry_same_id($user['person_id'], $person['person_id'])) echo '?person_id=' . $person['person_id']; ?>" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Update password</a>
 <?php
     }
     if ($person['person_email_verified'] !== 'y') {
